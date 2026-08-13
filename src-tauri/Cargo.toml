@@ -1,0 +1,66 @@
+[package]
+name = "screenshotify"
+version = "0.1.0"
+description = "Watches your screenshot folders and suggests meaningful filenames with AI."
+authors = ["Screenshotify contributors"]
+license = "MIT"
+repository = "https://github.com/screenshotify/screenshotify"
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+# The desktop binary links against this; the name is referenced from main.rs.
+name = "screenshotify_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6", features = [] }
+
+[dependencies]
+tauri = { version = "2.11", features = ["tray-icon", "image-png"] }
+tauri-plugin-dialog = "2.7"
+tauri-plugin-notification = "2.3"
+tauri-plugin-store = "2.4"
+tauri-plugin-opener = "2.5"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Vision requests. rustls avoids an OpenSSL build dependency on Windows.
+reqwest = { version = "0.12", default-features = false, features = [
+  "json",
+  "rustls-tls",
+  "charset",
+  "http2",
+] }
+base64 = "0.22"
+
+# Screenshots are downscaled locally before upload.
+image = { version = "0.25", default-features = false, features = [
+  "png",
+  "jpeg",
+  "webp",
+  "bmp",
+  "gif",
+  "tiff",
+] }
+
+# Folder watching.
+notify = "8"
+
+# API key storage — Windows Credential Manager.
+keyring = { version = "3.6", default-features = false, features = ["windows-native"] }
+
+dirs = "6"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-autostart = "2.5"
+tauri-plugin-single-instance = "2.4"
+tauri-plugin-updater = "2.10"
+tauri-plugin-process = "2.3"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

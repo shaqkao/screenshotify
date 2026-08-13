@@ -1,0 +1,1354 @@
+/* ─────────────────────────────────────────────────────────────
+   Screenshotify — theme tokens
+   ───────────────────────────────────────────────────────────── */
+:root {
+  /* Brand ramp — generated from Kigen.design */
+  --bone-50: #f5f0ea;
+  --bone-100: #e6d7c4;
+  --bone-200: #dcc6a8;
+  --bone-300: #c5b196;
+  --bone-400: #ab9a82;
+  --bone-500: #90816d;
+  --bone-600: #746857;
+  --bone-700: #584e41;
+  --bone-800: #3c352c;
+  --bone-900: #211d17;
+  --bone-950: #14100c;
+
+  --bg: #f6f7f9;
+  --bg-elev: #ffffff;
+  --bg-sunken: #eceef2;
+  --border: #dfe3ea;
+  --border-strong: #c6ccd8;
+  --text: #16181d;
+  --text-dim: #5c6472;
+  --text-faint: #8a92a1;
+  --accent: var(--bone-600);
+  --accent-hover: var(--bone-700);
+  --accent-soft: var(--bone-50);
+  --ok: #158a54;
+  --ok-soft: #e3f5ec;
+  --warn: #b45309;
+  --warn-soft: #fdf1e0;
+  --err: #c62b3d;
+  --err-soft: #fdeaec;
+  --shadow: 0 1px 2px rgba(16, 20, 30, 0.06), 0 4px 14px rgba(16, 20, 30, 0.06);
+  --radius: 10px;
+  --font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --mono: "Cascadia Mono", "Consolas", ui-monospace, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --bg-elev: #1c1f25;
+    --bg-sunken: #101216;
+    --border: #2b2f38;
+    --border-strong: #3d434f;
+    --text: #e8eaef;
+    --text-dim: #a3aab8;
+    --text-faint: #737b8a;
+    --accent: var(--bone-500);
+    --accent-hover: var(--bone-400);
+    --accent-soft: color-mix(in srgb, var(--bone-500) 20%, var(--bg));
+    --ok: #4ecb8d;
+    --ok-soft: #16301f;
+    --warn: #e0a458;
+    --warn-soft: #2f2413;
+    --err: #f2707f;
+    --err-soft: #33181d;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.3);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--bg-sunken);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+a { color: var(--accent); }
+
+/* ─────────────────────────────── Sidebar ─────────────────────────────── */
+.sidebar {
+  flex: 0 0 auto;
+  width: 224px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 14px;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  /* Fixed dark panel, independent of the app's light/dark theme (matches the
+     reference doc-site sidebar). Everything inside reads these instead of
+     the page-level tokens, so text/borders/surfaces stay legible on #3f3f3f
+     no matter which theme the rest of the app is in. */
+  background: #2c2c2c;
+  border-right: 1px solid #454545;
+  --bg-elev: #3a3a3a;
+  --border: #454545;
+  --border-strong: #585858;
+  --text: #f2f2f2;
+  --text-dim: #c7c7c7;
+  --text-faint: #9c9c9c;
+  --accent: var(--bone-500);
+  --accent-hover: var(--bone-400);
+  --ok: #4ecb8d;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 4px 20px;
+}
+
+.brand-badge {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.brand-mark {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  display: block;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-name {
+  position: relative;
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.brand-name-text {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-alpha-badge {
+  position: absolute;
+  top: -10px;
+  right: -28px;
+  width: 56px;
+  height: 56px;
+  transform: rotate(20deg);
+  pointer-events: none;
+}
+
+.tabs-label {
+  padding: 0 6px;
+  margin-bottom: 2px;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.tabs {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* The highlight behind the active tab is its own element rather than a
+   background on the button, so switching tabs slides it across. JS sets its
+   width and transform; .is-ready is added after the first placement so it
+   doesn't slide in from the left corner on load. */
+.tab-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-radius: 10px;
+  background: var(--bg-elev);
+  box-shadow: var(--shadow);
+  pointer-events: none;
+}
+
+.tab-pill.is-ready {
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab {
+  appearance: none;
+  border: 0;
+  /* Positioned so the label paints above .tab-pill, which precedes it here. */
+  position: relative;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 550;
+  width: 100%;
+  padding: 10px 11px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.tab:hover { color: var(--text); }
+
+.tab:hover:not(.is-active) {
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+}
+
+.tab.is-active { color: var(--text); }
+
+/* currentColor ties these to .tab's own color rules above, so the icon
+   dims/brightens with the label through hover/active with no extra rules. */
+.tab-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Port of @animate-ui/icons-cog's default animateOnHover keyframes
+   (registry/icons/cog/index.tsx: rotate: [0, 90, 180], duration 1.25s,
+   ease-in-out) — the artwork is Lucide's stock gear glyph, wrapped in this
+   <g> exactly like the source wraps it in a single motion.g. */
+@keyframes tab-icon-cog-spin {
+  0%   { transform: rotate(0deg); }
+  50%  { transform: rotate(90deg); }
+  100% { transform: rotate(180deg); }
+}
+
+.tab-icon-cog {
+  transform-origin: 12px 12px; /* viewBox-space center */
+  transform: rotate(0deg);
+  /* The mouse-leave ease-back-to-0: the source uses Motion's default spring
+     for this, which plain CSS has no equivalent for — this is the nearest
+     stand-in, not a literal port. */
+  transition: transform 0.4s ease;
+}
+
+.tab:hover .tab-icon-cog,
+.tab:focus-visible .tab-icon-cog {
+  animation: tab-icon-cog-spin 1.25s ease-in-out forwards;
+}
+
+/* Port of @animate-ui/icons-clock's default animateOnHover keyframes
+   (registry/icons/clock/index.tsx). Each hand pivots independently around
+   the clock's center (12,12), unlike the cog's single rigid group: the hour
+   hand (the shorter line1, to 16,14) wobbles 0°→20°→0°, while the minute
+   hand (the longer line2, to 12,6) does one full spin — both 0.6s ease-in-out. */
+@keyframes tab-icon-clock-hour-tick {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(20deg); }
+}
+
+@keyframes tab-icon-clock-minute-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.tab-icon-clock-hour,
+.tab-icon-clock-minute {
+  transform-origin: 12px 12px; /* both hands pivot at the clock's center */
+  transform: rotate(0deg);
+  transition: transform 0.3s ease; /* early-mouse-leave ease-back; see the
+                                       cog rule above for why this isn't a
+                                       literal port of Motion's spring */
+}
+
+.tab:hover .tab-icon-clock-hour,
+.tab:focus-visible .tab-icon-clock-hour {
+  animation: tab-icon-clock-hour-tick 0.6s ease-in-out forwards;
+}
+
+.tab:hover .tab-icon-clock-minute,
+.tab:focus-visible .tab-icon-clock-minute {
+  animation: tab-icon-clock-minute-spin 0.6s ease-in-out forwards;
+}
+
+/* Port of @animate-ui/icons-clapperboard's default animateOnHover keyframes
+   (registry/icons/clapperboard/index.tsx). Two nested groups: the outer
+   "body" (everything) rotates+scales in a little 4-step wobble; the inner
+   "lid" (the diagonal striped top slab) additionally swings on its own,
+   hinged at its own bottom-left corner — like the board actually clapping
+   shut. Both 1.2s ease-in-out, keyframes evenly spaced (Motion's default for
+   an unweighted array) at 0/33/66/100%. transform-box: fill-box makes the
+   bottom-left origin resolve against the group's own drawn geometry rather
+   than the full 24×24 viewBox, matching Motion's 'bottom left' on the group. */
+@keyframes tab-icon-clapper-body {
+  0%   { transform: rotate(0deg) scale(1); }
+  33%  { transform: rotate(-5deg) scale(0.9); }
+  66%  { transform: rotate(7deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+@keyframes tab-icon-clapper-lid {
+  0%   { transform: rotate(0deg); }
+  33%  { transform: rotate(-4deg); }
+  66%  { transform: rotate(15deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.tab-icon-clapper-body {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: rotate(0deg) scale(1);
+  transition: transform 0.3s ease;
+}
+
+.tab-icon-clapper-lid {
+  transform-box: fill-box;
+  transform-origin: left bottom;
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+.tab:hover .tab-icon-clapper-body,
+.tab:focus-visible .tab-icon-clapper-body {
+  animation: tab-icon-clapper-body 1.2s ease-in-out forwards;
+}
+
+.tab:hover .tab-icon-clapper-lid,
+.tab:focus-visible .tab-icon-clapper-lid {
+  animation: tab-icon-clapper-lid 1.2s ease-in-out forwards;
+}
+
+.badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* An author `display` beats the UA stylesheet's `[hidden] { display: none }`,
+   so the attribute needs honouring explicitly — same reason .empty does it. */
+.badge[hidden] { display: none; }
+
+/* Pushes the watch pill to the bottom of the sidebar's column flow. */
+.sidebar-spacer { flex: 1 1 auto; }
+
+/* Hosts the #watch-btn-bump / #watch-btn-linen filter defs — never rendered
+   directly, only referenced via filter: url(#...) below. */
+.visually-hidden-filters {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.watch-pill {
+  position: relative;
+  /* Establishes a stacking context so the z-index:-1 ::before/::after frame
+     below is always contained within the button. Without this, it only
+     happened to render correctly on :hover, because the hover filter
+     incidentally creates a stacking context of its own — at rest, with no
+     filter, the negative z-index pseudo-elements escaped to the nearest
+     ancestor stacking context and painted behind the sidebar's own opaque
+     background, i.e. invisible. */
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 38px;
+  cursor: pointer;
+  overflow: visible;
+  border-radius: 7px;
+  background-color: var(--bg-elev);
+  /* Status colour the dot/glow read from while watching (unlit at rest). */
+  --glow: var(--ok);
+  box-shadow:
+    inset 1px 1px 3px #0002,
+    inset 2px 2px 6px #0002,
+    inset 4px 4px 10px #0002,
+    1px 1px 2px 0 #000,
+    1px 1px 2px 0 #fff3,
+    -1px -1px 2px -1px #000;
+}
+
+.watch-pill:hover {
+  filter: brightness(1.05);
+}
+
+/* A stacking context's own border always paints *below* its own negative
+   z-index children (CSS2.1 Appendix E: own background/border is painted
+   first, then negative-z-index descendants) — so a `border` set directly on
+   .watch-pill would be entirely painted over by ::before below. This ring is
+   a separate, un-z-indexed child instead: same stack level as .watch-fabric,
+   painted after it in document order, so it lands on top of both the fabric
+   and the ::before/::after frame. */
+.watch-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid #bda049;
+  border-style: outset;
+  pointer-events: none;
+}
+
+/* Woven-linen texture over the button's own background colour. */
+.watch-fabric {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  filter: url(#watch-btn-linen);
+  pointer-events: none;
+}
+
+/* Recessed brass-plate frame around the button, bump-lit for a raised look. */
+.watch-pill::before {
+  content: "";
+  position: absolute;
+  inset: -11px;
+  border-radius: 16px;
+  background-color: #181a1a;
+  filter: url(#watch-btn-bump);
+  z-index: -1;
+}
+
+.watch-pill::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 17px;
+  border: 1px solid #0004;
+  border-bottom-color: #0008;
+  box-shadow:
+    inset 1px 1px 1px #ffc6,
+    inset 1px 2px 2px #ffc6,
+    inset 1px 4px 4px #0006,
+    0 3px 5px -3px #0004;
+  z-index: -1;
+}
+
+#watch-label {
+  position: relative;
+  z-index: 2;
+  color: var(--text);
+  font-weight: 700;
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 1px #0006;
+}
+
+/* Two skewed blurred trapezoids simulate a shadow cast by a raised lever. */
+.watch-shadow {
+  z-index: -2;
+  position: absolute;
+  bottom: -13px;
+  width: 120%;
+  height: 7px;
+  background: linear-gradient(to bottom, #000, 50%, #0000);
+  filter: blur(5px);
+  opacity: 0.2;
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.watch-shadow.left { transform: skewX(-65deg) translateX(-8px); }
+.watch-shadow.right { transform: skewX(65deg) translateX(8px); }
+
+.watch-pill:hover .watch-shadow { opacity: 0.35; }
+.watch-pill:hover .watch-shadow.left { transform: skewX(-70deg) translateX(-14px); }
+.watch-pill:hover .watch-shadow.right { transform: skewX(70deg) translateX(14px); }
+
+/* Ambient glow behind the button — unlit unless actually watching; no glow
+   at all while paused/no folders. */
+.watch-light {
+  position: absolute;
+  left: 15%;
+  top: -18px;
+  width: 70%;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--glow);
+  filter: blur(14px);
+  z-index: 1;
+  mix-blend-mode: color-dodge;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.watch-pill.is-on .watch-light { opacity: 0.35; }
+.watch-pill.is-on:hover .watch-light { opacity: 0.55; }
+
+/* Small pulsing status LED in the corner — only lit (and only pulses) while
+   actually watching; no dot at all while paused/no folders. */
+.watch-dot {
+  position: absolute;
+  top: -5px;
+  right: 10px;
+  width: 6px;
+  height: 4px;
+  border-radius: 1px;
+  border: 1px solid #fff5;
+  background-color: var(--glow);
+  box-shadow: 0 0 2px 0 var(--glow), 0 0 6px 1px var(--glow);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.watch-pill.is-on .watch-dot {
+  opacity: 1;
+  animation: watch-dot-pulse 1.6s ease infinite;
+}
+
+@keyframes watch-dot-pulse {
+  50% {
+    box-shadow: 0 0 2px 0 var(--glow), 0 0 8px 2px var(--glow);
+    filter: brightness(1.3);
+  }
+}
+
+/* ─────────────────────────────── Views ─────────────────────────────── */
+main {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+}
+
+.view {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+}
+
+.view.is-active { display: flex; }
+
+.toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbar-left { display: flex; gap: 8px; align-items: center; }
+
+.toolbar-right {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.muted {
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+/* ─────────────────────────────── Buttons ─────────────────────────────── */
+.btn {
+  appearance: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--text);
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  padding: 6px 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) { background: var(--bg-sunken); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+
+.btn-sm {
+  font-size: 12px;
+  padding: 4px 9px;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-dim);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--bg-sunken);
+  color: var(--text);
+}
+
+.btn-danger { color: var(--err); }
+
+/* ─────────────────────────── Scan progress ─────────────────────────── */
+.scan-progress {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  background: var(--accent-soft);
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.scan-bar {
+  flex: 1 1 auto;
+  height: 5px;
+  background: var(--bg-elev);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.scan-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+/* ─────────────────────────────── Lists ─────────────────────────────── */
+.list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 12px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.list:empty { display: none; }
+
+/* Set by the "Photos per row" setting (main.js:applyListColumns), on both
+   the Review and History lists. Cards keep the thumbnail on the left and the
+   description on the right, same as the single-column list — only the
+   actions/footer row (too many controls to fit alongside a narrower card)
+   wraps onto a full-width line underneath. */
+.list.is-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--list-cols, 2), 1fr);
+  align-content: start;
+}
+
+.list.is-grid .row {
+  grid-template-columns: 116px 1fr;
+}
+
+.list.is-grid .row-actions {
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.list.is-grid .hrow {
+  flex-wrap: wrap;
+}
+
+.list.is-grid .hrow-foot {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ─────────────────────────── Review row ─────────────────────────── */
+.row {
+  display: grid;
+  grid-template-columns: 116px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  box-shadow: var(--shadow);
+}
+
+.row.is-error { border-color: color-mix(in srgb, var(--err) 45%, var(--border)); }
+
+/* Sized wrapper so the loading spinner below can be centered over the
+   thumbnail via absolute positioning — .thumb is a background-image div, not
+   an <img>, and can't host ::before/::after of its own without competing
+   with that background, hence the wrapper + sibling spinner element instead.
+   Background/border/rounding live here rather than on .thumb so the card
+   shape stays visible even before .thumb has anything to show. */
+.thumb-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 116px;
+  height: 74px;
+  border-radius: 7px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* A CSS background-image, not <img src>: an <img> kept intermittently
+   flashing the browser's native broken-image glyph in the real WebView2
+   runtime during the instant between a new src being assigned and it
+   actually being paintable — opacity tricks and `load`/`decode()`-gated
+   reveals all still let it through. A background-image has no such native
+   fallback glyph at all, so there's nothing left to flash. */
+.thumb {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: zoom-in;
+  display: block;
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+/* `.is-loaded` is added by JS only once an off-DOM preload confirms the
+   image decoded successfully, right before the real background-image is
+   applied — so this element never shows a "still loading" background at all. */
+.thumb:not(.is-loaded) {
+  opacity: 0;
+}
+
+/* "Chaotic orbit" loading spinner, shown while the sibling .thumb isn't
+   loaded yet (queued for the IntersectionObserver, mid-request, or decoding). */
+.chaotic-orbit {
+  --uib-size: 22px;
+  --uib-speed: 1.5s;
+  --uib-color-a: #ffffff;
+  --uib-color-b: #9a9a9a;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  height: var(--uib-size);
+  width: var(--uib-size);
+  animation: chaotic-orbit-rotate calc(var(--uib-speed) * 1.667) infinite linear;
+}
+
+.thumb:not(.is-loaded):not(.thumb-failed) + .chaotic-orbit {
+  display: flex;
+}
+
+.chaotic-orbit::before,
+.chaotic-orbit::after {
+  content: "";
+  position: absolute;
+  height: 60%;
+  width: 60%;
+  border-radius: 50%;
+  will-change: transform;
+  flex-shrink: 0;
+}
+
+.chaotic-orbit::before {
+  background-color: var(--uib-color-a);
+  animation: chaotic-orbit-orbit var(--uib-speed) linear infinite;
+}
+
+.chaotic-orbit::after {
+  background-color: var(--uib-color-b);
+  animation: chaotic-orbit-orbit var(--uib-speed) linear calc(var(--uib-speed) / -2) infinite;
+}
+
+@keyframes chaotic-orbit-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes chaotic-orbit-orbit {
+  0% { transform: translate(calc(var(--uib-size) * 0.5)) scale(0.73684); opacity: 0.65; }
+  5% { transform: translate(calc(var(--uib-size) * 0.4)) scale(0.684208); opacity: 0.58; }
+  10% { transform: translate(calc(var(--uib-size) * 0.3)) scale(0.631576); opacity: 0.51; }
+  15% { transform: translate(calc(var(--uib-size) * 0.2)) scale(0.578944); opacity: 0.44; }
+  20% { transform: translate(calc(var(--uib-size) * 0.1)) scale(0.526312); opacity: 0.37; }
+  25% { transform: translate(0%) scale(0.47368); opacity: 0.3; }
+  30% { transform: translate(calc(var(--uib-size) * -0.1)) scale(0.526312); opacity: 0.37; }
+  35% { transform: translate(calc(var(--uib-size) * -0.2)) scale(0.578944); opacity: 0.44; }
+  40% { transform: translate(calc(var(--uib-size) * -0.3)) scale(0.631576); opacity: 0.51; }
+  45% { transform: translate(calc(var(--uib-size) * -0.4)) scale(0.684208); opacity: 0.58; }
+  50% { transform: translate(calc(var(--uib-size) * -0.5)) scale(0.73684); opacity: 0.65; }
+  55% { transform: translate(calc(var(--uib-size) * -0.4)) scale(0.789472); opacity: 0.72; }
+  60% { transform: translate(calc(var(--uib-size) * -0.3)) scale(0.842104); opacity: 0.79; }
+  65% { transform: translate(calc(var(--uib-size) * -0.2)) scale(0.894736); opacity: 0.86; }
+  70% { transform: translate(calc(var(--uib-size) * -0.1)) scale(0.947368); opacity: 0.93; }
+  75% { transform: translate(0%) scale(1); opacity: 1; }
+  80% { transform: translate(calc(var(--uib-size) * 0.1)) scale(0.947368); opacity: 0.93; }
+  85% { transform: translate(calc(var(--uib-size) * 0.2)) scale(0.894736); opacity: 0.86; }
+  90% { transform: translate(calc(var(--uib-size) * 0.3)) scale(0.842104); opacity: 0.79; }
+  95% { transform: translate(calc(var(--uib-size) * 0.4)) scale(0.789472); opacity: 0.72; }
+  100% { transform: translate(calc(var(--uib-size) * 0.5)) scale(0.73684); opacity: 0.65; }
+}
+
+.row-main { min-width: 0; }
+
+.row-original {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 5px;
+  cursor: default;
+}
+
+.row-original b { font-weight: 600; color: var(--text-dim); }
+
+.row-info {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 5px;
+}
+
+.row-info:empty { display: none; }
+
+.name-input {
+  display: block;
+  width: 100%;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 550;
+  color: var(--text);
+  background: var(--bg-sunken);
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 7px 10px;
+  margin-bottom: 5px;
+  user-select: text;
+}
+
+.name-input:hover { border-color: var(--border); }
+
+.name-input:focus {
+  outline: none;
+  background: var(--bg-elev);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.name-input:disabled { color: var(--text-faint); }
+
+.row-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+  min-height: 18px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  border-radius: 5px;
+  padding: 1px 7px;
+}
+
+.status-pending { color: var(--text-dim); background: var(--bg-sunken); }
+.status-working { color: var(--accent); background: var(--accent-soft); }
+.status-ready { color: var(--ok); background: var(--ok-soft); }
+.status-error { color: var(--err); background: var(--err-soft); }
+
+.spinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* ─────────────────────────── History row ─────────────────────────── */
+.hrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+
+.hrow-main { min-width: 0; flex: 1 1 auto; }
+
+.hrow-to {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hrow-from {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hrow-from s { opacity: 0.75; }
+
+.hrow-info {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.hrow-info:empty { display: none; }
+
+.hrow-time {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+/* `display: contents` erases this wrapper from the flat list's flex layout,
+   so .hrow-time and the Undo button act as .hrow's own direct children there
+   (unchanged from before the wrapper existed). In the grid/card layout it
+   becomes a real flex row, putting the two on one line at the card's foot. */
+.hrow-foot { display: contents; }
+
+.list.is-grid .hrow-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* ─────────────────────────────── Empty ─────────────────────────────── */
+.empty {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  color: var(--text-dim);
+  padding: 40px;
+}
+
+.empty[hidden] { display: none; }
+
+/* camera.png watermark for the Review panel specifically (History gets its
+   own history.png watermark below, via the same technique) — applied to
+   both #review-list and #review-empty, whichever is showing, so it stays
+   put whether the queue is empty or has screenshots in it. Native 500x500
+   size, darkened by a black overlay regardless of light/dark theme. */
+#review-list,
+#review-empty {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
+    url(../camera.png);
+  background-repeat: no-repeat, no-repeat;
+  background-position: center, center;
+  background-size: cover, auto;
+}
+
+/* Scoped to Review's empty state only — History's empty state shares .empty
+   but has no watermark behind it, so it must keep the normal theme tokens. */
+#review-empty {
+  --text: #f2f2f2;
+  --text-dim: #c7c7c7;
+}
+
+/* history.png watermark for the History panel, same technique as Review's
+   camera.png above — applied to both #history-list and #history-empty so it
+   stays put whether the list is empty or has rows in it. Native size, with
+   a vignette that gets darker (not lighter/faded-out) toward the edges for
+   a soft edge feel, plus a flat overlay for legibility across the center
+   regardless of light/dark theme.
+
+   Painted on a ::before instead of directly on the element's own background
+   so the vignette only affects the watermark, not descendants — putting it
+   on the element itself would also darken .row cards near the edges. The
+   ::before needs its own stacking context (position + z-index) so its
+   z-index:-1 doesn't escape and paint behind the panel's own background —
+   see the .watch-pill fix above for why that matters. */
+#history-list,
+#history-empty {
+  position: relative;
+  z-index: 0;
+}
+
+#history-list::before,
+#history-empty::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.92) 100%),
+    linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
+    url(../history.png);
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-position: center, center, center;
+  background-size: cover, cover, auto;
+}
+
+#history-empty {
+  --text: #f2f2f2;
+  --text-dim: #c7c7c7;
+}
+
+/* Solid backdrop behind the heading/hint so they stay readable over
+   whatever part of the camera.png artwork lands behind them. */
+.empty-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+  padding: 18px 22px;
+}
+
+.empty h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.empty p {
+  margin: 0;
+  max-width: 44ch;
+  font-size: 13px;
+}
+
+/* ─────────────────────────────── Settings ─────────────────────────────── */
+/* Same darkening as Review/History. Every piece of text in this view lives
+   inside a .card, which has its own opaque --bg-elev background, so nothing
+   here needs the readable-on-dark token overrides those other two use. */
+#view-settings {
+  overflow-y: auto;
+  background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55));
+}
+
+.settings-wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 20px 20px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 18px 18px;
+  margin: 0;
+  box-shadow: var(--shadow);
+}
+
+.card legend {
+  font-weight: 650;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 0 6px;
+}
+
+.card-hint {
+  color: var(--text-dim);
+  font-size: 12.5px;
+  margin: 2px 0 16px;
+}
+
+.field {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.field:last-child { margin-bottom: 0; }
+
+.field-label {
+  display: block;
+  font-weight: 550;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.field-hint {
+  display: block;
+  color: var(--text-faint);
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+input[type="text"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 10px;
+  user-select: text;
+}
+
+textarea { resize: vertical; }
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+select { cursor: pointer; }
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.key-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 13px;
+  cursor: pointer;
+}
+
+.check input {
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.check span { font-size: 13.5px; }
+
+.check small {
+  display: block;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.test-result {
+  margin-top: 10px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+}
+
+.test-result.ok { background: var(--ok-soft); color: var(--ok); }
+.test-result.err { background: var(--err-soft); color: var(--err); }
+.test-result.busy { background: var(--bg-sunken); color: var(--text-dim); }
+
+.folder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 8px 7px 12px;
+  font-size: 12.5px;
+}
+
+.folder-path {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 12px;
+  user-select: text;
+}
+
+.folder-empty {
+  color: var(--text-faint);
+  font-size: 12.5px;
+  font-style: italic;
+  padding: 4px 0;
+}
+
+/* ─────────────────────────────── Toasts ─────────────────────────────── */
+.toasts {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 9px 14px;
+  font-size: 13px;
+  max-width: 380px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+  animation: toast-in 0.18s ease;
+}
+
+.toast.ok { border-left-color: var(--ok); }
+.toast.err { border-left-color: var(--err); }
+.toast button { flex: 0 0 auto; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ─────────────────────────────── Lightbox ─────────────────────────────── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 80;
+  cursor: zoom-out;
+  padding: 32px;
+}
+
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ─────────────────────────────── Scrollbars ─────────────────────────────── */
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 6px;
+  border: 3px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Permissions Screenshotify's main window needs. Filesystem access deliberately goes through Rust commands rather than the fs plugin, so no broad file scope is granted here.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:app:allow-version",
+    "core:event:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-unminimize",
+    "core:window:allow-set-focus",
+    "core:window:allow-is-visible",
+    "core:window:allow-is-focused",
+    "core:window:allow-close",
+    "dialog:allow-open",
+    "dialog:allow-ask",
+    "notification:default",
+    "store:default",
+    "autostart:default",
+    "opener:allow-open-url",
+    "opener:allow-reveal-item-in-dir",
+    "updater:default",
+    "process:allow-restart"
+  ]
+}

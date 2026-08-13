@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Screenshotify</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-badge">
+          <img class="brand-mark" src="./icon.png" alt="" aria-hidden="true" />
+        </span>
+        <span class="brand-text">
+          <span class="brand-name">
+            <span class="brand-name-text">Screenshotify</span>
+            <img class="brand-alpha-badge" src="./alpha-badge.png" alt="" aria-hidden="true" />
+          </span>
+        </span>
+      </div>
+
+      <span class="tabs-label">Menu</span>
+
+      <nav class="tabs" role="tablist">
+        <span class="tab-pill" aria-hidden="true"></span>
+        <button class="tab is-active" role="tab" data-view="review">
+          <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <g class="tab-icon-clapper-body">
+              <g class="tab-icon-clapper-lid">
+                <path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z" />
+                <path d="m6.2 5.3 3.1 3.9" />
+                <path d="m12.4 3.4 3.1 4" />
+              </g>
+              <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+            </g>
+          </svg>
+          Review <span class="badge" id="tab-badge" hidden>0</span>
+        </button>
+        <button class="tab" role="tab" data-view="history">
+          <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <line class="tab-icon-clock-hour" x1="12" y1="12" x2="16" y2="14" />
+            <line class="tab-icon-clock-minute" x1="12" y1="6" x2="12" y2="12" />
+          </svg>
+          History
+        </button>
+        <button class="tab" role="tab" data-view="settings">
+          <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <g class="tab-icon-cog">
+              <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z" />
+              <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
+              <path d="M12 2v2" />
+              <path d="M12 22v-2" />
+              <path d="m17 20.66-1-1.73" />
+              <path d="M11 10.27 7 3.34" />
+              <path d="m20.66 17-1.73-1" />
+              <path d="m3.34 7 1.73 1" />
+              <path d="M14 12h8" />
+              <path d="M2 12h2" />
+              <path d="m20.66 7-1.73 1" />
+              <path d="m3.34 17 1.73-1" />
+              <path d="m17 3.34-1 1.73" />
+              <path d="m11 13.73-4 6.93" />
+            </g>
+          </svg>
+          Settings
+        </button>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+
+      <button class="watch-pill" id="watch-toggle" title="Toggle folder watching">
+        <div class="watch-fabric"></div>
+        <div class="watch-ring"></div>
+        <span id="watch-label">Watching</span>
+        <div class="watch-shadow left"></div>
+        <div class="watch-shadow right"></div>
+        <div class="watch-dot" id="watch-dot"></div>
+        <div class="watch-light"></div>
+      </button>
+    </aside>
+
+    <svg class="visually-hidden-filters" aria-hidden="true" focusable="false">
+      <filter id="watch-btn-bump">
+        <feTurbulence result="noise" numOctaves="4" baseFrequency="0.678" type="fractalNoise"></feTurbulence>
+        <feSpecularLighting result="specular" lighting-color="#fffffa" specularExponent="15"
+          specularConstant="0.7" surfaceScale="0.22" in="noise">
+          <fePointLight z="210" y="-50" x="40"></fePointLight>
+        </feSpecularLighting>
+        <feComposite result="noise2" operator="in" in="specular" in2="SourceGraphic"></feComposite>
+        <feBlend mode="difference" in2="noise2" in="SourceGraphic" result="out"></feBlend>
+        <feBlend mode="overlay" in2="out" in="SourceGraphic"></feBlend>
+      </filter>
+      <filter id="watch-btn-linen">
+        <feTurbulence type="fractalNoise" baseFrequency="0.9 0.03" numOctaves="2" seed="8" result="verticalNoise"></feTurbulence>
+        <feTurbulence type="fractalNoise" baseFrequency="0.03 0.9" numOctaves="2" seed="12" result="horizontalNoise"></feTurbulence>
+        <feBlend in="verticalNoise" in2="horizontalNoise" mode="multiply" result="woven"></feBlend>
+        <feComponentTransfer in="woven" result="threadContrast">
+          <feFuncR type="gamma" amplitude="1.3" exponent="2.4"></feFuncR>
+          <feFuncG type="gamma" amplitude="1.3" exponent="2.4"></feFuncG>
+          <feFuncB type="gamma" amplitude="1.3" exponent="2.4"></feFuncB>
+        </feComponentTransfer>
+        <feGaussianBlur in="threadContrast" stdDeviation="0.22" result="softThreads"></feGaussianBlur>
+        <feComposite in="softThreads" in2="SourceGraphic" operator="in" result="textureMask"></feComposite>
+        <feBlend in="SourceGraphic" in2="textureMask" mode="color-burn"></feBlend>
+      </filter>
+    </svg>
+
+    <main>
+      <!-- ───────────────────────── Review ───────────────────────── -->
+      <section class="view is-active" id="view-review">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button class="btn btn-primary" id="btn-scan">Scan a folder…</button>
+            <button class="btn" id="btn-pick-files">Choose files…</button>
+            <button class="btn" id="btn-retry-failed" hidden>Retry failed</button>
+          </div>
+          <div class="toolbar-right">
+            <span class="muted" id="queue-status"></span>
+            <button class="btn" id="btn-clear">Clear list</button>
+            <button class="btn btn-primary" id="btn-apply-all" disabled>Apply all</button>
+          </div>
+        </div>
+
+        <div class="scan-progress" id="scan-progress" hidden>
+          <div class="scan-bar"><i id="scan-bar-fill"></i></div>
+          <span id="scan-progress-text"></span>
+          <button class="btn btn-sm" id="btn-cancel-scan">Cancel</button>
+        </div>
+
+        <div class="list" id="review-list"></div>
+
+        <div class="empty" id="review-empty">
+          <div class="empty-text">
+            <h2>No screenshots waiting</h2>
+            <p id="empty-hint">
+              Screenshotify is watching your screenshot folders. Take a screenshot and a
+              suggested name will show up here.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────────────────── History ───────────────────────── -->
+      <section class="view" id="view-history">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <span class="muted">Renames applied by Screenshotify. Undo restores the original filename.</span>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn" id="btn-undo-last">Undo last batch</button>
+            <button class="btn" id="btn-clear-history">Clear history</button>
+          </div>
+        </div>
+        <div class="list" id="history-list"></div>
+        <div class="empty" id="history-empty">
+          <h2>Nothing renamed yet</h2>
+          <p>Once you apply a suggestion it will be listed here so you can undo it.</p>
+        </div>
+      </section>
+
+      <!-- ───────────────────────── Settings ───────────────────────── -->
+      <section class="view" id="view-settings">
+        <div class="settings-wrap">
+          <fieldset class="card">
+            <legend>AI provider</legend>
+            <p class="card-hint">
+              Any OpenAI-compatible endpoint that accepts image input: OpenAI,
+              OpenRouter, Ollama, LM Studio, vLLM, and others. Your key is stored
+              in the Windows Credential Manager, never in plain text.
+            </p>
+
+            <label class="field">
+              <span class="field-label">Base URL</span>
+              <input type="text" id="set-base-url" spellcheck="false"
+                     placeholder="https://api.openai.com/v1" />
+              <span class="field-hint">
+                Ollama: <code>http://localhost:11434/v1</code> ·
+                LM Studio: <code>http://localhost:1234/v1</code> ·
+                OpenRouter: <code>https://openrouter.ai/api/v1</code>
+              </span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">API key</span>
+              <span class="key-row">
+                <input type="password" id="set-api-key" spellcheck="false"
+                       placeholder="sk-…" autocomplete="off" />
+                <button class="btn btn-sm" id="btn-key-reveal" type="button">Show</button>
+                <button class="btn btn-sm" id="btn-key-clear" type="button">Remove</button>
+              </span>
+              <span class="field-hint" id="key-status">No key stored.</span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Model</span>
+              <span class="key-row">
+                <input type="text" id="set-model" spellcheck="false" list="model-list"
+                       placeholder="gpt-4o-mini" />
+                <button class="btn btn-sm" id="btn-load-models" type="button">Load models</button>
+              </span>
+              <datalist id="model-list"></datalist>
+              <span class="field-hint">
+                Free text — type any model name your endpoint accepts. It must
+                support image input (e.g. <code>gpt-4o-mini</code>,
+                <code>qwen2.5vl</code>, <code>llava</code>).
+              </span>
+            </label>
+
+            <div class="field">
+              <button class="btn btn-primary" id="btn-test">Test connection</button>
+              <div class="test-result" id="test-result" hidden></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="card">
+            <legend>Watched folders</legend>
+            <p class="card-hint">
+              New image files in these folders are picked up automatically.
+              Subfolders are included.
+            </p>
+            <div class="folder-list" id="folder-list"></div>
+            <button class="btn" id="btn-add-folder">Add folder…</button>
+            <button class="btn" id="btn-add-default">Use default Screenshots folder</button>
+          </fieldset>
+
+          <fieldset class="card">
+            <legend>Naming</legend>
+
+            <label class="field">
+              <span class="field-label">Filename style</span>
+              <select id="set-case-style">
+                <option value="kebab">kebab-case — login-screen-error</option>
+                <option value="snake">snake_case — login_screen_error</option>
+                <option value="space">Spaces — login screen error</option>
+                <option value="title">Title Case — Login Screen Error</option>
+                <option value="camel">camelCase — loginScreenError</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Date prefix</span>
+              <select id="set-date-prefix">
+                <option value="none">None</option>
+                <option value="dash">2026-08-12-name</option>
+                <option value="compact">20260812-name</option>
+                <option value="datetime">2026-08-12-1435-name</option>
+              </select>
+              <span class="field-hint">Uses the file's creation time, not today's date.</span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Maximum words: <b id="max-words-out">6</b></span>
+              <input type="range" id="set-max-words" min="2" max="12" step="1" />
+            </label>
+
+            <label class="field">
+              <span class="field-label">Description language</span>
+              <input type="text" id="set-language" placeholder="English" spellcheck="false" />
+            </label>
+
+            <label class="field">
+              <span class="field-label">Extra instructions for the model (optional)</span>
+              <textarea id="set-prompt-extra" rows="3"
+                placeholder="e.g. Always mention the app or website name if it is visible."></textarea>
+            </label>
+          </fieldset>
+
+          <fieldset class="card">
+            <legend>Behaviour</legend>
+
+            <label class="field">
+              <span class="field-label">Photos per row</span>
+              <select id="set-list-columns">
+                <option value="1">1 — list</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+              <span class="field-hint">Applies to both the Review and History lists.</span>
+            </label>
+
+            <label class="check">
+              <input type="checkbox" id="set-watch-enabled" />
+              <span>Watch folders for new screenshots</span>
+            </label>
+
+            <label class="check">
+              <input type="checkbox" id="set-notifications" />
+              <span>Show a notification when a suggestion is ready
+                <small>Click the notification to open the review panel.</small></span>
+            </label>
+
+            <label class="check">
+              <input type="checkbox" id="set-autostart" />
+              <span>Start Screenshotify when I sign in to Windows</span>
+            </label>
+
+            <label class="check">
+              <input type="checkbox" id="set-start-minimized" />
+              <span>Start minimised to the system tray</span>
+            </label>
+
+            <label class="check">
+              <input type="checkbox" id="set-close-to-tray" />
+              <span>Closing the window hides it to the tray instead of quitting</span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Parallel requests: <b id="concurrency-out">2</b></span>
+              <input type="range" id="set-concurrency" min="1" max="6" step="1" />
+              <span class="field-hint">Lower this if your provider rate-limits you.</span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Image sent to the model: <b id="max-edge-out">1024</b> px longest edge</span>
+              <input type="range" id="set-max-edge" min="512" max="2048" step="128" />
+              <span class="field-hint">
+                Screenshots are downscaled before upload to cut cost and latency.
+                Raise this if small text in your screenshots matters.
+              </span>
+            </label>
+          </fieldset>
+
+          <fieldset class="card">
+            <legend>Updates</legend>
+            <label class="check">
+              <input type="checkbox" id="set-auto-update" />
+              <span>Check for updates automatically on launch</span>
+            </label>
+            <div class="field">
+              <button class="btn" id="btn-check-update">Check for updates now</button>
+              <span class="muted" id="update-status"></span>
+            </div>
+            <p class="card-hint">Screenshotify <span id="app-version">…</span> · MIT licensed ·
+              <a href="#" id="link-repo">github.com/screenshotify/screenshotify</a></p>
+          </fieldset>
+        </div>
+      </section>
+    </main>
+
+    <div class="toasts" id="toasts"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

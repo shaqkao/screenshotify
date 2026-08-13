@@ -1044,17 +1044,32 @@ main {
 
 /* history.png watermark for the History panel, same technique as Review's
    camera.png above — applied to both #history-list and #history-empty so it
-   stays put whether the list is empty or has rows in it. Native size, with
-   a vignette that gets darker (not lighter/faded-out) toward the edges for
-   a soft edge feel, plus a flat overlay for legibility across the center
-   regardless of light/dark theme.
+   stays put whether the list is empty or has rows in it. Native size, plus
+   a flat overlay for legibility across the center regardless of light/dark
+   theme, and a vignette that gets darker toward the edges for a soft edge
+   feel.
 
    Painted on a ::before instead of directly on the element's own background
    so the vignette only affects the watermark, not descendants — putting it
    on the element itself would also darken .row cards near the edges. The
    ::before needs its own stacking context (position + z-index) so its
    z-index:-1 doesn't escape and paint behind the panel's own background —
-   see the .watch-pill fix above for why that matters. */
+   see the .watch-pill fix above for why that matters.
+
+   The vignette used to be a third layer stacked into this same
+   background-image list (radial-gradient(...), linear-gradient(...),
+   url(history.png)) — three layers, one of them a real image file. That
+   combination silently failed to paint the image layer at all in the real
+   Tauri/WebView2 window (confirmed by reproducing it in `npm run tauri dev`
+   and by sampling the rendered pixels: perfectly flat, no trace of the
+   artwork), even though it rendered correctly in every plain-browser test
+   (Vite dev server, `vite preview`, real markup). Review's simpler two-layer
+   version (linear-gradient + url(camera.png), no radial-gradient) was never
+   reported broken. Dropping to that same two-layer shape here and moving the
+   vignette to an inset box-shadow on the same pseudo-element — a completely
+   different rendering path that doesn't touch background-image at all —
+   sidesteps whatever the WebView2-specific failure mode was, rather than
+   continuing to chase its exact cause. */
 #history-list,
 #history-empty {
   position: relative;
@@ -1068,12 +1083,12 @@ main {
   inset: 0;
   z-index: -1;
   background-image:
-    radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.92) 100%),
     linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
     url(../history.png);
-  background-repeat: no-repeat, no-repeat, no-repeat;
-  background-position: center, center, center;
-  background-size: cover, cover, auto;
+  background-repeat: no-repeat, no-repeat;
+  background-position: center, center;
+  background-size: cover, auto;
+  box-shadow: inset 0 0 140px 50px rgba(0, 0, 0, 0.92);
 }
 
 #history-empty {

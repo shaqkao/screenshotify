@@ -655,6 +655,32 @@ main {
   color: var(--text-dim);
 }
 
+/* "Scan a folder…" / "Choose files…" toolbar buttons: an inline <svg> icon
+   before the label, sized up from the base .btn since these two are the
+   primary entry points into Review and should read as the main actions. */
+.btn-icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 15px;
+  padding: 10px 18px;
+  border-radius: 9px;
+}
+
+.btn-icon-label .btn-icon {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+
+/* "Scan a folder…" swaps to the open-folder glyph on hover — both paths ship
+   in the same <svg> and toggle via `display` rather than being switched out
+   in JS, since it is a pure hover state with nothing else to track. */
+#btn-scan .icon-folder-open { display: none; }
+#btn-scan:hover .icon-folder-closed { display: none; }
+#btn-scan:hover .icon-folder-open { display: block; }
+
 .btn-ghost:hover:not(:disabled) {
   background: var(--bg-sunken);
   color: var(--text);
@@ -1335,15 +1361,24 @@ input[type="range"] {
   pointer-events: none;
 }
 
+/* Per-kind accent used by the icon circle, message text, and wave below.
+   Defaults to the "info" accent; .ok/.err override it. Reusing the app's
+   existing theme tokens (rather than the fixed greens/reds a static design
+   would hardcode) keeps every kind correct in both light and dark theme. */
 .toast {
+  --toast-color: var(--accent);
+  --toast-soft: var(--accent-soft);
+  position: relative;
   background: var(--bg-elev);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
   border-radius: 8px;
   box-shadow: var(--shadow);
-  padding: 9px 14px;
+  padding: 10px 14px;
+  min-height: 56px;
+  box-sizing: border-box;
+  overflow: hidden;
   font-size: 13px;
-  max-width: 380px;
+  width: 330px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1351,9 +1386,71 @@ input[type="range"] {
   animation: toast-in 0.18s ease;
 }
 
-.toast.ok { border-left-color: var(--ok); }
-.toast.err { border-left-color: var(--err); }
+.toast.ok { --toast-color: var(--ok); --toast-soft: var(--ok-soft); }
+.toast.err { --toast-color: var(--err); --toast-soft: var(--err-soft); }
 .toast button { flex: 0 0 auto; }
+
+/* Decorative wave tucked behind the icon circle, bottom-left of the card —
+   same shape for every kind, recolored via currentColor's --toast-color. */
+.toast .wave {
+  position: absolute;
+  left: -31px;
+  top: 32px;
+  width: 80px;
+  transform: rotate(90deg);
+  fill: color-mix(in srgb, var(--toast-color) 22%, transparent);
+  pointer-events: none;
+}
+
+.toast-icon-container {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--toast-soft);
+}
+
+.toast-icon-container svg {
+  width: 16px;
+  height: 16px;
+  fill: var(--toast-color);
+}
+
+.toast-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.toast-message {
+  margin: 0;
+  color: var(--toast-color);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.toast-close {
+  flex: 0 0 auto;
+  display: flex;
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: var(--text-dim);
+}
+
+.toast-close svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+
+.toast-close:hover { color: var(--text); }
 
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(8px); }

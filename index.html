@@ -112,8 +112,27 @@
       <section class="view is-active" id="view-review">
         <div class="toolbar">
           <div class="toolbar-left">
-            <button class="btn btn-primary" id="btn-scan">Scan a folder…</button>
-            <button class="btn" id="btn-pick-files">Choose files…</button>
+            <button class="btn btn-primary btn-icon-label" id="btn-scan">
+              <svg class="btn-icon" viewBox="0 -960 960 960" aria-hidden="true">
+                <path
+                  class="icon-folder-closed"
+                  d="M168-192q-29 0-50.5-21.5T96-264v-432q0-30 21.5-51t50.5-21h216l96 96h312q30 0 51 21t21 51v336q0 29-21 50.5T792-192H168Z"
+                />
+                <path
+                  class="icon-folder-open"
+                  d="M168-192q-32 0-52-21t-20-51v-432q0-30 20-51t52-21h216l96 96h313q31 0 50.5 21t21.5 51H168v336l78-264h690l-85 285q-8 23-21 37t-38 14H168Z"
+                />
+              </svg>
+              Scan a folder…
+            </button>
+            <button class="btn btn-icon-label" id="btn-pick-files">
+              <svg class="btn-icon" viewBox="0 -960 960 960" aria-hidden="true">
+                <path
+                  d="M850-96 744-202v82h-72v-205h205v72h-83l106 106-50 51ZM528-637h168L528-805v168ZM264-109q-29.7 0-50.85-21.15Q192-151.3 192-181v-624q0-29.7 21.15-50.85Q234.3-877 264-877h312l192 192v288H600v288H264Z"
+                />
+              </svg>
+              Choose files…
+            </button>
             <button class="btn" id="btn-retry-failed" hidden>Retry failed</button>
           </div>
           <div class="toolbar-right">

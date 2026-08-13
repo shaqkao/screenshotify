@@ -778,16 +778,20 @@ main {
 }
 
 /* "Chaotic orbit" loading spinner, shown while the sibling .thumb isn't
-   loaded yet (queued for the IntersectionObserver, mid-request, or decoding). */
+   loaded yet (queued for the IntersectionObserver, mid-request, or decoding).
+   Centered via inset+margin, not transform: translate(-50%,-50%) — the
+   rotate keyframes below also animate `transform`, and an animated property
+   replaces the element's own declared value for its whole duration, so a
+   translate() used for centering here would just get overwritten by
+   rotate(), pushing the spinner off-center. */
 .chaotic-orbit {
   --uib-size: 22px;
   --uib-speed: 1.5s;
   --uib-color-a: #ffffff;
   --uib-color-b: #9a9a9a;
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  margin: auto;
   display: none;
   align-items: center;
   justify-content: center;

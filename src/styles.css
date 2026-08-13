@@ -633,6 +633,22 @@ main {
   padding: 4px 9px;
 }
 
+/* The per-row History Undo/Redo button: an inline <svg><path> + <span> label
+   rather than plain text, so the icon can be swapped (undo/redo glyph, same
+   viewBox) without touching the label, and vice versa. */
+.hrow-undo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hrow-undo-btn .btn-icon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+
 .btn-ghost {
   background: transparent;
   border-color: transparent;
@@ -646,34 +662,41 @@ main {
 
 .btn-danger { color: var(--err); }
 
-/* ─────────────────────────── Scan progress ─────────────────────────── */
-.scan-progress {
-  flex: 0 0 auto;
+/* ─────────────────────────── AI progress ─────────────────────────── */
+/* Only ever shown while queue.remaining() > 0 — i.e. while a suggestion
+   request is actually in flight or about to be — so unlike the old
+   always-in-the-DOM top bar this never occupies layout space (and never
+   pushes the list down) when nothing is running. Anchored to #view-review
+   (not `main`) so it stays put within the Review view specifically rather
+   than drifting if History/Settings ever get their own bottom-left content. */
+#view-review {
+  position: relative;
+}
+
+.ai-progress {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 5;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 9px 16px;
-  background: var(--accent-soft);
-  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  padding: 7px 10px 7px 12px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   font-size: 12.5px;
   color: var(--text-dim);
 }
 
-.scan-bar {
-  flex: 1 1 auto;
-  height: 5px;
-  background: var(--bg-elev);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.scan-bar i {
-  display: block;
-  height: 100%;
-  width: 0;
-  background: var(--accent);
-  border-radius: 3px;
-  transition: width 0.2s ease;
+/* `display: flex` above and the browser's default `[hidden] { display: none }`
+   have equal specificity, and this rule comes later in the cascade — so
+   without this override, setting the element's `hidden` property from JS
+   (main.js:renderAiProgress) would silently do nothing and the pill would
+   stay on screen permanently, whether or not anything is actually running. */
+.ai-progress[hidden] {
+  display: none;
 }
 
 /* ─────────────────────────────── Lists ─────────────────────────────── */
@@ -1044,10 +1067,11 @@ main {
 
 /* history.png watermark for the History panel, same technique as Review's
    camera.png above — applied to both #history-list and #history-empty so it
-   stays put whether the list is empty or has rows in it. Native size, plus
-   a flat overlay for legibility across the center regardless of light/dark
-   theme, and a vignette that gets darker toward the edges for a soft edge
-   feel.
+   stays put whether the list is empty or has rows in it. Scaled to the
+   panel's own height (width auto, so its aspect ratio is preserved) and
+   centered, rather than Review's native-size camera.png, plus a flat overlay
+   for legibility across the center regardless of light/dark theme, and a
+   vignette that gets darker toward the edges for a soft edge feel.
 
    Painted on a ::before instead of directly on the element's own background
    so the vignette only affects the watermark, not descendants — putting it
@@ -1087,7 +1111,7 @@ main {
     url(../history.png);
   background-repeat: no-repeat, no-repeat;
   background-position: center, center;
-  background-size: cover, auto;
+  background-size: cover, auto 100%;
   box-shadow: inset 0 0 140px 50px rgba(0, 0, 0, 0.92);
 }
 

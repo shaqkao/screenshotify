@@ -306,22 +306,22 @@ function initReviewToolbar() {
   });
 
   queue.onQueueChange((type) => {
-    if (type === "progress" || type === "update") renderScanProgress();
+    if (type === "progress" || type === "update") renderAiProgress();
   });
 }
 
-function renderScanProgress() {
-  const bar = $("scan-progress");
+/** Shown only while an AI suggestion request is running or queued to run. */
+function renderAiProgress() {
+  const pill = $("ai-progress");
   const left = queue.remaining();
   if (left === 0) {
-    bar.hidden = true;
+    pill.hidden = true;
     return;
   }
   const total = queue.allItems().length;
   const done = total - left;
-  bar.hidden = false;
-  $("scan-bar-fill").style.width = `${total ? Math.round((done / total) * 100) : 0}%`;
-  $("scan-progress-text").textContent = `${done} of ${total}`;
+  pill.hidden = false;
+  $("ai-progress-text").textContent = `Asking the model… ${done} of ${total}`;
 }
 
 /**
@@ -498,6 +498,14 @@ function applyListColumns() {
   list.style.setProperty("--list-cols", cols);
 }
 
+// Material Symbols "undo"/"redo" glyphs (960x960 viewBox), inlined so the
+// row's Undo/Redo button can swap its icon by just changing this <path>'s
+// `d`, matching how its label already swaps between "Undo" and "Redo".
+const UNDO_ICON_PATH =
+  "M288-192v-72h288q50 0 85-35t35-85q0-50-35-85t-85-35H330l93 93-51 51-180-180 180-180 51 51-93 93h246q80 0 136 56t56 136q0 80-56 136t-136 56H288Z";
+const REDO_ICON_PATH =
+  "M384-192q-80 0-136-56t-56-136q0-80 56-136t136-56h246l-93-93 51-51 180 180-180 180-51-51 93-93H384q-50 0-85 35t-35 85q0 50 35 85t85 35h288v72H384Z";
+
 const historyRows = new Map(); // id -> { el, refs }
 
 /**
@@ -581,7 +589,12 @@ function buildHistoryRow(entry) {
   time.title = new Date(entry.at).toLocaleString();
 
   const btn = document.createElement("button");
-  btn.className = "btn btn-sm";
+  btn.className = "btn btn-sm hrow-undo-btn";
+  btn.innerHTML =
+    `<svg class="btn-icon" viewBox="0 -960 960 960" aria-hidden="true"><path/></svg>` +
+    `<span></span>`;
+  const btnIcon = btn.querySelector("path");
+  const btnLabel = btn.querySelector("span");
   btn.addEventListener("click", async () => {
     try {
       if (entry.undone) {
@@ -605,7 +618,11 @@ function buildHistoryRow(entry) {
 
   el.append(thumbWrap, main, foot);
 
-  const row = { el, refs: { thumb, to, fromName, btn }, thumbCache: new Map() };
+  const row = {
+    el,
+    refs: { thumb, to, fromName, btn, btnIcon, btnLabel },
+    thumbCache: new Map(),
+  };
   updateHistoryRow(row, entry);
   return row;
 }
@@ -641,7 +658,8 @@ function updateHistoryRow(row, entry) {
   refs.to.title = currentPath;
   refs.fromName.textContent = basename(previousPath);
 
-  refs.btn.textContent = entry.undone ? "Redo" : "Undo";
+  refs.btnIcon.setAttribute("d", entry.undone ? REDO_ICON_PATH : UNDO_ICON_PATH);
+  refs.btnLabel.textContent = entry.undone ? "Redo" : "Undo";
 }
 
 function basename(p) {

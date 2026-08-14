@@ -593,9 +593,9 @@ main {
 .toolbar-left { display: flex; gap: 8px; align-items: center; min-width: 0; }
 
 .history-search {
-  flex: 1 1 420px;
-  min-width: 220px;
-  max-width: 640px;
+  flex: 1 1 630px;
+  min-width: 330px;
+  max-width: 960px;
 }
 
 /* Shows a "/" key hint until the field has a value (an empty `required`

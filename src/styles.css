@@ -614,14 +614,26 @@ main {
   background: var(--bg-elev);
 }
 
-.search-label input {
+/* [type="text"] added purely to out-specificity the generic
+   `input[type="text"]` / `input[type="text"]:focus` rules further down this
+   file (Settings' text fields) — same (class, element) specificity as those
+   would otherwise let source order decide, and losing that fight is exactly
+   what put a second, smaller accent ring+border on this input before. */
+.search-label input[type="text"] {
   outline: none;
   width: 100%;
   border: none;
+  border-radius: 0;
+  padding: 0;
   background: none;
   font: inherit;
   font-size: 14.5px;
   color: var(--text-dim);
+}
+
+.search-label input[type="text"]:focus {
+  border: none;
+  box-shadow: none;
 }
 
 .search-label input:focus + .filter-btn,

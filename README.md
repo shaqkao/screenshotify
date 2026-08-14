@@ -10,7 +10,7 @@ Screenshotify sits in the Windows tray, notices new screenshots, and asks an AI 
 of your choosing for a filename that describes what is actually on screen.
 Nothing is renamed until you say so.
 
-### [⬇ Download for Windows](https://github.com/shaqkao/screenshotify/releases/latest)
+### [<img src="https://i.postimg.cc/7ZmVrVZR/windows.png" width="20" valign="middle" alt=""> Download for Windows](https://github.com/shaqkao/screenshotify/releases/latest)
 
 Free · open source · MIT · bring your own API key
 
@@ -20,9 +20,11 @@ Free · open source · MIT · bring your own API key
 
 <div align="center">
 
-<img src="intro1.png" width="32%" alt="Screenshotify screenshot 1">
-<img src="intro2.png" width="32%" alt="Screenshotify screenshot 2">
-<img src="intro3.png" width="32%" alt="Screenshotify screenshot 3">
+<img src="intro1.png" width="70%" alt="Screenshotify screenshot 1">
+
+<img src="intro2.png" width="70%" alt="Screenshotify screenshot 2">
+
+<img src="intro3.png" width="70%" alt="Screenshotify screenshot 3">
 
 </div>
 

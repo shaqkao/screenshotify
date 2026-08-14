@@ -169,7 +169,7 @@ async fn post_chat(
         .header("Content-Type", "application/json")
         // OpenRouter attributes traffic with these; other providers ignore them.
         .header("X-Title", "Screenshotify")
-        .header("HTTP-Referer", "https://github.com/screenshotify/screenshotify")
+        .header("HTTP-Referer", "https://github.com/shaqkao/screenshotify")
         .json(&body);
 
     let response = auth(request).send().await.map_err(|e| {

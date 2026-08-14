@@ -22,7 +22,7 @@
         "center": true,
         "resizable": true,
         "visible": false,
-        "skipTaskbar": false
+        "skipTaskbar": true
       }
     ],
     "security": {
@@ -56,7 +56,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://github.com/screenshotify/screenshotify/releases/latest/download/latest.json"
+        "https://github.com/shaqkao/screenshotify/releases/latest/download/latest.json"
       ],
       "pubkey": ""
     }

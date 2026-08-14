@@ -22,7 +22,7 @@ import * as history from "./history.js";
 import { initReview, applyAll, skipAll, refreshChrome, formatFileInfo, openLightbox, setColumns } from "./review.js";
 import { toast } from "./toast.js";
 
-const REPO_URL = "https://github.com/screenshotify/screenshotify";
+const REPO_URL = "https://github.com/shaqkao/screenshotify";
 /** Above this many files, a folder scan asks for confirmation first. */
 const BULK_CONFIRM_AT = 50;
 /** Mirrors files::IMAGE_EXTS on the Rust side; only used for the file-picker filter. */
@@ -77,6 +77,7 @@ async function showWindowIfWanted() {
     console.error("could not read the launch mode", err);
   }
   try {
+    await win.setSkipTaskbar(false);
     await win.show();
     await win.setFocus();
   } catch (err) {
@@ -825,10 +826,8 @@ async function initSettingsForm() {
   bindCheck("set-close-to-tray", "closeToTray", async () => {
     await invoke("set_close_to_tray", { enabled: getSettings().closeToTray });
   });
-  bindSelectNumber("set-concurrency", "concurrency");
-  enhanceSelect($("set-concurrency"));
-  bindSelectNumber("set-max-edge", "maxEdge");
-  enhanceSelect($("set-max-edge"));
+  bindNumberInput("set-concurrency", "concurrency", { min: 1, max: 6 });
+  bindNumberInput("set-max-edge", "maxEdge", { min: 256, max: 4096 });
 
   // Autostart is owned by the OS, so read the real state rather than ours.
   const autostartInput = $("set-autostart");
@@ -939,13 +938,31 @@ function bindCheck(id, key, after) {
 }
 
 // Like bindSelect, but for <select>s standing in for a numeric setting
-// (maxWords/concurrency/maxEdge), so the stored value stays a Number rather
-// than the string a <select> naturally produces.
+// (maxWords/maxEdge), so the stored value stays a Number rather than the
+// string a <select> naturally produces.
 function bindSelectNumber(id, key, after) {
   const el = $(id);
   el.value = String(getSettings()[key]);
   el.addEventListener("change", async () => {
     await updateSettings({ [key]: Number(el.value) });
+    if (after) after();
+  });
+}
+
+// A free-typed numeric setting (e.g. Parallel requests). Non-digit keystrokes
+// are stripped as they're typed rather than rejected after the fact, and the
+// value is clamped into range once the field loses focus.
+function bindNumberInput(id, key, { min, max }, after) {
+  const el = $(id);
+  el.value = String(getSettings()[key]);
+  el.addEventListener("input", () => {
+    const digits = el.value.replace(/[^0-9]/g, "");
+    if (digits !== el.value) el.value = digits;
+  });
+  el.addEventListener("change", async () => {
+    const n = Math.min(max, Math.max(min, Number(el.value) || min));
+    el.value = String(n);
+    await updateSettings({ [key]: n });
     if (after) after();
   });
 }

@@ -1616,6 +1616,28 @@ textarea:focus {
 
 select { cursor: pointer; }
 
+/* A number field with a fixed unit label overlaid on its right edge, e.g.
+   "1024|px longest edge". The input keeps padding clear of the label so
+   typed digits never run under it. */
+.field-suffix {
+  position: relative;
+}
+
+.field-suffix input {
+  padding-right: 108px;
+}
+
+.field-suffix span {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  font-size: 12.5px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
 /* Custom dropdown shell wrapping a hidden native <select>, which stays the
    single source of truth for value/events (see enhanceSelect in main.js) —
    this is presentation only. */

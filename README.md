@@ -10,7 +10,7 @@ Screenshotify sits in the Windows tray, notices new screenshots, and asks an AI 
 of your choosing for a filename that describes what is actually on screen.
 Nothing is renamed until you say so.
 
-### [⬇ Download for Windows](https://github.com/screenshotify/screenshotify/releases/latest)
+### [⬇ Download for Windows](https://github.com/shaqkao/screenshotify/releases/latest)
 
 Free · open source · MIT · bring your own API key
 
@@ -76,7 +76,7 @@ does not try to manage the model runtime for you.
 
 ## Installing
 
-Download the installer from the [latest release](https://github.com/screenshotify/screenshotify/releases/latest)
+Download the installer from the [latest release](https://github.com/shaqkao/screenshotify/releases/latest)
 and run it. That single file is everything — there is no runtime to install
 alongside it, no Node, no Python, no account.
 

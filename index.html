@@ -326,11 +326,11 @@
                 </label>
                 <div class="csel-panel"></div>
                 <select id="set-case-style" class="csel-native">
-                  <option value="kebab">kebab-case — login-screen-error</option>
-                  <option value="snake">snake_case — login_screen_error</option>
-                  <option value="space">Spaces — login screen error</option>
-                  <option value="title">Title Case — Login Screen Error</option>
-                  <option value="camel">camelCase — loginScreenError</option>
+                  <option value="kebab">kebab-case — my-screenshot</option>
+                  <option value="snake">snake_case — my_screenshot</option>
+                  <option value="space">Spaces — my screenshot</option>
+                  <option value="title">Title Case — My Screenshot</option>
+                  <option value="camel">camelCase — myScreenshot</option>
                 </select>
               </div>
             </div>
@@ -454,61 +454,25 @@
               <span>Closing the window hides it to the tray instead of quitting</span>
             </label>
 
-            <div class="field">
+            <label class="field">
               <span class="field-label">Parallel requests</span>
-              <div class="csel">
-                <input type="checkbox" class="csel-toggle" id="csel-toggle-concurrency" />
-                <label class="csel-trigger" for="csel-toggle-concurrency">
-                  <span class="csel-value"></span>
-                  <svg class="csel-arrow" viewBox="0 -960 960 960" aria-hidden="true">
-                    <path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z" />
-                  </svg>
-                </label>
-                <div class="csel-panel"></div>
-                <select id="set-concurrency" class="csel-native">
-                  <option value="1">1 request at a time</option>
-                  <option value="2">2 requests at a time</option>
-                  <option value="3">3 requests at a time</option>
-                  <option value="4">4 requests at a time</option>
-                  <option value="5">5 requests at a time</option>
-                  <option value="6">6 requests at a time</option>
-                </select>
-              </div>
+              <input type="text" id="set-concurrency" inputmode="numeric" pattern="[0-9]*" maxlength="2"
+                spellcheck="false" />
               <span class="field-hint">Lower this if your provider rate-limits you.</span>
-            </div>
+            </label>
 
-            <div class="field">
+            <label class="field">
               <span class="field-label">Image sent to the model</span>
-              <div class="csel">
-                <input type="checkbox" class="csel-toggle" id="csel-toggle-max-edge" />
-                <label class="csel-trigger" for="csel-toggle-max-edge">
-                  <span class="csel-value"></span>
-                  <svg class="csel-arrow" viewBox="0 -960 960 960" aria-hidden="true">
-                    <path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z" />
-                  </svg>
-                </label>
-                <div class="csel-panel"></div>
-                <select id="set-max-edge" class="csel-native">
-                  <option value="512">512 px longest edge</option>
-                  <option value="640">640 px longest edge</option>
-                  <option value="768">768 px longest edge</option>
-                  <option value="896">896 px longest edge</option>
-                  <option value="1024">1024 px longest edge</option>
-                  <option value="1152">1152 px longest edge</option>
-                  <option value="1280">1280 px longest edge</option>
-                  <option value="1408">1408 px longest edge</option>
-                  <option value="1536">1536 px longest edge</option>
-                  <option value="1664">1664 px longest edge</option>
-                  <option value="1792">1792 px longest edge</option>
-                  <option value="1920">1920 px longest edge</option>
-                  <option value="2048">2048 px longest edge</option>
-                </select>
+              <div class="field-suffix">
+                <input type="text" id="set-max-edge" inputmode="numeric" pattern="[0-9]*" maxlength="4"
+                  spellcheck="false" />
+                <span>px longest edge</span>
               </div>
               <span class="field-hint">
                 Screenshots are downscaled before upload to cut cost and latency.
                 Raise this if small text in your screenshots matters.
               </span>
-            </div>
+            </label>
           </fieldset>
 
           <fieldset class="card">
@@ -528,7 +492,7 @@
               <span class="muted" id="update-status"></span>
             </div>
             <p class="card-hint">Screenshotify <span id="app-version">…</span> · MIT licensed ·
-              <a href="#" id="link-repo">github.com/screenshotify/screenshotify</a></p>
+              <a href="#" id="link-repo">github.com/shaqkao/screenshotify</a></p>
           </fieldset>
         </div>
       </section>

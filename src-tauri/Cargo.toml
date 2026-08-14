@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Watches your screenshot folders and suggests meaningful filenames with AI."
 authors = ["Screenshotify contributors"]
 license = "MIT"
-repository = "https://github.com/screenshotify/screenshotify"
+repository = "https://github.com/shaqkao/screenshotify"
 edition = "2021"
 rust-version = "1.77.2"
 

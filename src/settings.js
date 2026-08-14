@@ -23,7 +23,7 @@ export const DEFAULTS = {
   promptExtra: "",
   concurrency: 2,
   maxEdge: 1024,
-  listColumns: 1,
+  listColumns: 2,
   autoUpdate: true,
   sidebarCollapsed: false,
 };

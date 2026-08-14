@@ -26,6 +26,7 @@ struct AppState {
 
 fn show_main(app: &AppHandle) {
     if let Some(win) = app.get_webview_window("main") {
+        let _ = win.set_skip_taskbar(false);
         let _ = win.show();
         let _ = win.unminimize();
         let _ = win.set_focus();
@@ -315,6 +316,7 @@ pub fn run() {
                             api.prevent_close();
                             if let Some(win) = win_handle.get_webview_window("main") {
                                 let _ = win.hide();
+                                let _ = win.set_skip_taskbar(true);
                             }
                         }
                     }

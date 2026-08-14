@@ -18,6 +18,14 @@ Free · open source · MIT · bring your own API key
 
 ---
 
+<div align="center">
+
+<img src="intro1.png" width="32%" alt="Screenshotify screenshot 1">
+<img src="intro2.png" width="32%" alt="Screenshotify screenshot 2">
+<img src="intro3.png" width="32%" alt="Screenshotify screenshot 3">
+
+</div>
+
 ## Why
 
 `Screenshot 2026-08-12 143507.png` tells you nothing. Six months later you have
@@ -177,9 +185,10 @@ Deliberately left out to keep the first release shippable:
 
 - Managing local models for you (installing, downloading, VRAM detection) —
   point the base URL at Ollama or LM Studio instead
-- Accept/Reject buttons directly on the Windows notification
 - Microsoft Store distribution
 - File types other than images
+
+These may be implemented in the future, who knows?
 
 ## Contributing
 

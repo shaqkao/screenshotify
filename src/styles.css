@@ -18,6 +18,10 @@
   --bg: #f6f7f9;
   --bg-elev: #ffffff;
   --bg-sunken: #eceef2;
+  /* The sidebar's fixed panel color — same value regardless of theme, unlike
+     --bg-sunken above. Also used on .thumb-wrap so Review/History's image
+     containers read as the same surface as the sidebar. */
+  --sidebar-bg: #2c2c2c;
   --border: #dfe3ea;
   --border-strong: #c6ccd8;
   --text: #16181d;
@@ -106,7 +110,7 @@ a { color: var(--accent); }
      reference doc-site sidebar). Everything inside reads these instead of
      the page-level tokens, so text/borders/surfaces stay legible on #3f3f3f
      no matter which theme the rest of the app is in. */
-  background: #2c2c2c;
+  background: var(--sidebar-bg);
   border-right: 1px solid #454545;
   --bg-elev: #3a3a3a;
   --border: #454545;
@@ -921,7 +925,7 @@ main {
   width: 116px;
   height: 74px;
   border-radius: 7px;
-  background: var(--bg-sunken);
+  background: var(--sidebar-bg);
   border: 1px solid var(--border);
   overflow: hidden;
 }

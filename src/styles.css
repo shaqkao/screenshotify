@@ -575,6 +575,13 @@ main {
 .view.is-active { display: flex; }
 
 .toolbar {
+  /* Own stacking context, above #history-list/#history-empty's (z-index: 0,
+     set for an unrelated reason — see the comment there) — without this,
+     the filter dropdown's panel, despite its own z-index, was rendering
+     underneath #history-empty's inset-shadow vignette wherever the two
+     happened to spatially overlap just below the toolbar. */
+  position: relative;
+  z-index: 10;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -586,9 +593,9 @@ main {
 .toolbar-left { display: flex; gap: 8px; align-items: center; min-width: 0; }
 
 .history-search {
-  flex: 1 1 360px;
+  flex: 1 1 420px;
   min-width: 220px;
-  max-width: 480px;
+  max-width: 640px;
 }
 
 /* Shows a "/" key hint until the field has a value (an empty `required`

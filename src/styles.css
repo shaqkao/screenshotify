@@ -19,8 +19,9 @@
   --bg-elev: #ffffff;
   --bg-sunken: #eceef2;
   /* The sidebar's fixed panel color — same value regardless of theme, unlike
-     --bg-sunken above. Also used on .thumb-wrap so Review/History's image
-     containers read as the same surface as the sidebar. */
+     --bg-sunken above. Also used as the base behind Review/History's
+     watermarked list backgrounds so that area reads as the same surface as
+     the sidebar instead of a much darker one. */
   --sidebar-bg: #2c2c2c;
   --border: #dfe3ea;
   --border-strong: #c6ccd8;
@@ -925,7 +926,7 @@ main {
   width: 116px;
   height: 74px;
   border-radius: 7px;
-  background: var(--sidebar-bg);
+  background: var(--bg-sunken);
   border: 1px solid var(--border);
   overflow: hidden;
 }
@@ -1205,6 +1206,7 @@ main {
    size, darkened by a black overlay regardless of light/dark theme. */
 #review-list,
 #review-empty {
+  background-color: var(--sidebar-bg);
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
     url(../camera.png);
@@ -1253,6 +1255,7 @@ main {
 #history-empty {
   position: relative;
   z-index: 0;
+  background-color: var(--sidebar-bg);
 }
 
 #history-list::before,
@@ -1267,7 +1270,11 @@ main {
   background-repeat: no-repeat, no-repeat;
   background-position: center, center;
   background-size: cover, auto 100%;
-  box-shadow: inset 0 0 140px 50px rgba(0, 0, 0, 0.92);
+  /* Toned down from 0.92 — at full strength this crushed the whole panel
+     toward black, well past --sidebar-bg (its own base color, set on the
+     real element behind this pseudo) and out of step with Review's plain
+     0.55 flat overlay, which has no vignette at all. */
+  box-shadow: inset 0 0 140px 50px rgba(0, 0, 0, 0.55);
 }
 
 #history-empty {

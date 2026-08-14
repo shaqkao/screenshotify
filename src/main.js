@@ -730,12 +730,15 @@ async function initSettingsForm() {
   // — naming —
   bindSelect("set-case-style", "caseStyle", () => queue.restyleAll());
   bindSelect("set-date-prefix", "datePrefix", () => queue.restyleAll());
+  enhanceSelect($("set-case-style"));
+  enhanceSelect($("set-date-prefix"));
   bindRange("set-max-words", "maxWords", "max-words-out", () => queue.restyleAll());
   bindText("set-language", "language");
   bindText("set-prompt-extra", "promptExtra");
 
   // — behaviour —
   bindSelect("set-list-columns", "listColumns", applyListColumns);
+  enhanceSelect($("set-list-columns"));
   bindCheck("set-watch-enabled", "watchEnabled", applyWatchState);
   bindCheck("set-notifications", "notifications");
   bindCheck("set-start-minimized", "startMinimized");
@@ -786,6 +789,60 @@ function bindSelect(id, key, after) {
   el.addEventListener("change", async () => {
     await updateSettings({ [key]: el.value });
     if (after) after();
+  });
+}
+
+// Builds the custom .csel dropdown UI around a hidden native <select>. The
+// select stays the single source of truth for value/events (bindSelect keeps
+// working unchanged) — this just mirrors it visually and writes back through
+// select.value + a dispatched "change" so nothing downstream has to know the
+// UI isn't a native <select> anymore.
+function enhanceSelect(select) {
+  const wrap = select.closest(".csel");
+  const toggle = wrap.querySelector(".csel-toggle");
+  const trigger = wrap.querySelector(".csel-trigger");
+  const valueEl = wrap.querySelector(".csel-value");
+  const panel = wrap.querySelector(".csel-panel");
+
+  select.tabIndex = -1;
+  select.setAttribute("aria-hidden", "true");
+  trigger.tabIndex = 0;
+  trigger.setAttribute("role", "button");
+  trigger.setAttribute("aria-haspopup", "listbox");
+
+  const options = Array.from(select.options).map((opt) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "csel-option";
+    btn.dataset.value = opt.value;
+    btn.textContent = opt.textContent;
+    btn.addEventListener("click", () => {
+      select.value = opt.value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      toggle.checked = false;
+    });
+    panel.append(btn);
+    return btn;
+  });
+
+  const sync = () => {
+    const current = select.options[select.selectedIndex];
+    valueEl.textContent = current ? current.textContent : "";
+    for (const btn of options) {
+      btn.setAttribute("aria-selected", btn.dataset.value === select.value ? "true" : "false");
+    }
+  };
+
+  select.addEventListener("change", sync);
+  sync();
+
+  trigger.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter" || ev.key === " ") {
+      ev.preventDefault();
+      toggle.checked = !toggle.checked;
+    } else if (ev.key === "Escape" && toggle.checked) {
+      toggle.checked = false;
+    }
   });
 }
 

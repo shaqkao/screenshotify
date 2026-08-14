@@ -247,27 +247,47 @@
           <fieldset class="card">
             <legend>Naming</legend>
 
-            <label class="field">
+            <div class="field">
               <span class="field-label">Filename style</span>
-              <select id="set-case-style">
-                <option value="kebab">kebab-case — login-screen-error</option>
-                <option value="snake">snake_case — login_screen_error</option>
-                <option value="space">Spaces — login screen error</option>
-                <option value="title">Title Case — Login Screen Error</option>
-                <option value="camel">camelCase — loginScreenError</option>
-              </select>
-            </label>
+              <div class="csel">
+                <input type="checkbox" class="csel-toggle" id="csel-toggle-case-style" />
+                <label class="csel-trigger" for="csel-toggle-case-style">
+                  <span class="csel-value"></span>
+                  <svg class="csel-arrow" viewBox="0 -960 960 960" aria-hidden="true">
+                    <path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z" />
+                  </svg>
+                </label>
+                <div class="csel-panel"></div>
+                <select id="set-case-style" class="csel-native">
+                  <option value="kebab">kebab-case — login-screen-error</option>
+                  <option value="snake">snake_case — login_screen_error</option>
+                  <option value="space">Spaces — login screen error</option>
+                  <option value="title">Title Case — Login Screen Error</option>
+                  <option value="camel">camelCase — loginScreenError</option>
+                </select>
+              </div>
+            </div>
 
-            <label class="field">
+            <div class="field">
               <span class="field-label">Date prefix</span>
-              <select id="set-date-prefix">
-                <option value="none">None</option>
-                <option value="dash">2026-08-12-name</option>
-                <option value="compact">20260812-name</option>
-                <option value="datetime">2026-08-12-1435-name</option>
-              </select>
+              <div class="csel">
+                <input type="checkbox" class="csel-toggle" id="csel-toggle-date-prefix" />
+                <label class="csel-trigger" for="csel-toggle-date-prefix">
+                  <span class="csel-value"></span>
+                  <svg class="csel-arrow" viewBox="0 -960 960 960" aria-hidden="true">
+                    <path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z" />
+                  </svg>
+                </label>
+                <div class="csel-panel"></div>
+                <select id="set-date-prefix" class="csel-native">
+                  <option value="none">None</option>
+                  <option value="dash">2026-08-12-name</option>
+                  <option value="compact">20260812-name</option>
+                  <option value="datetime">2026-08-12-1435-name</option>
+                </select>
+              </div>
               <span class="field-hint">Uses the file's creation time, not today's date.</span>
-            </label>
+            </div>
 
             <label class="field">
               <span class="field-label">Maximum words: <b id="max-words-out">6</b></span>
@@ -289,39 +309,54 @@
           <fieldset class="card">
             <legend>Behaviour</legend>
 
-            <label class="field">
+            <div class="field">
               <span class="field-label">Photos per row</span>
-              <select id="set-list-columns">
-                <option value="1">1 — list</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-              </select>
+              <div class="csel">
+                <input type="checkbox" class="csel-toggle" id="csel-toggle-list-columns" />
+                <label class="csel-trigger" for="csel-toggle-list-columns">
+                  <span class="csel-value"></span>
+                  <svg class="csel-arrow" viewBox="0 -960 960 960" aria-hidden="true">
+                    <path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z" />
+                  </svg>
+                </label>
+                <div class="csel-panel"></div>
+                <select id="set-list-columns" class="csel-native">
+                  <option value="1">1 — list</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                </select>
+              </div>
               <span class="field-hint">Applies to both the Review and History lists.</span>
-            </label>
+            </div>
 
             <label class="check">
               <input type="checkbox" id="set-watch-enabled" />
+              <div class="checkmark"></div>
               <span>Watch folders for new screenshots</span>
             </label>
 
             <label class="check">
               <input type="checkbox" id="set-notifications" />
+              <div class="checkmark"></div>
               <span>Show a notification when a suggestion is ready
                 <small>Click the notification to open the review panel.</small></span>
             </label>
 
             <label class="check">
               <input type="checkbox" id="set-autostart" />
+              <div class="checkmark"></div>
               <span>Start Screenshotify when I sign in to Windows</span>
             </label>
 
             <label class="check">
               <input type="checkbox" id="set-start-minimized" />
+              <div class="checkmark"></div>
               <span>Start minimised to the system tray</span>
             </label>
 
             <label class="check">
               <input type="checkbox" id="set-close-to-tray" />
+              <div class="checkmark"></div>
               <span>Closing the window hides it to the tray instead of quitting</span>
             </label>
 
@@ -345,6 +380,7 @@
             <legend>Updates</legend>
             <label class="check">
               <input type="checkbox" id="set-auto-update" />
+              <div class="checkmark"></div>
               <span>Check for updates automatically on launch</span>
             </label>
             <div class="field">

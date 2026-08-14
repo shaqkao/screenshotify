@@ -1262,6 +1262,120 @@ textarea:focus {
 
 select { cursor: pointer; }
 
+/* Custom dropdown shell wrapping a hidden native <select>, which stays the
+   single source of truth for value/events (see enhanceSelect in main.js) —
+   this is presentation only. */
+.csel { position: relative; }
+
+.csel-native { display: none; }
+
+.csel-toggle { display: none; }
+
+.csel-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 10px;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.csel-toggle:checked ~ .csel-trigger,
+.csel-trigger:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.csel-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.csel-arrow {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  fill: var(--text-dim);
+  transition: transform 0.2s ease;
+}
+
+.csel-toggle:checked ~ .csel-trigger .csel-arrow { transform: rotate(180deg); }
+
+/* Full-viewport click-catcher: part of .csel-trigger (a <label>), so a click
+   anywhere outside the panel bubbles to the label and toggles it shut —
+   same trick the pasted design used for its dropdown. */
+.csel-trigger::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.csel-toggle:checked ~ .csel-trigger::before { z-index: 90; pointer-events: auto; }
+
+.csel-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 95;
+  padding: 5px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.csel-toggle:checked ~ .csel-panel {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.csel-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  padding: 7px 9px;
+  cursor: pointer;
+}
+
+.csel-option:hover,
+.csel-option:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.csel-option[aria-selected="true"] {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 input[type="range"] {
   width: 100%;
   accent-color: var(--accent);
@@ -1280,15 +1394,50 @@ input[type="range"] {
   align-items: flex-start;
   margin-bottom: 13px;
   cursor: pointer;
+  user-select: none;
 }
 
-.check input {
-  margin: 2px 0 0;
-  accent-color: var(--accent);
+.check input { display: none; }
+
+.check .checkmark {
+  position: relative;
+  flex: 0 0 auto;
+  margin-top: 1px;
   width: 15px;
   height: 15px;
-  flex: 0 0 auto;
-  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.check input:checked ~ .checkmark { background-color: var(--accent); }
+
+.check .checkmark::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  transform: rotate(0deg);
+  box-sizing: border-box;
+  transition: all 0.2s, border-width 0.1s;
+}
+
+.check input:checked ~ .checkmark::after {
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border-color: transparent white white transparent;
+  border-width: 0 1.5px 1.5px 0;
+  border-radius: 0;
+  transform: rotate(45deg);
+}
+
+.check input:focus-visible ~ .checkmark {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .check span { font-size: 13.5px; }

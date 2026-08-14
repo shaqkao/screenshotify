@@ -53,6 +53,10 @@ keyring = { version = "3.6", default-features = false, features = ["windows-nati
 
 dirs = "6"
 
+# Windows toast notifications with real action buttons (bypasses
+# tauri-plugin-notification, which drops action data on desktop).
+tauri-winrt-notification = "0.7"
+
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-autostart = "2.5"
 tauri-plugin-single-instance = "2.4"

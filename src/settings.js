@@ -25,6 +25,7 @@ export const DEFAULTS = {
   maxEdge: 1024,
   listColumns: 1,
   autoUpdate: true,
+  sidebarCollapsed: false,
 };
 
 const STORE_FILE = "settings.json";

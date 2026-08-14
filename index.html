@@ -9,9 +9,15 @@
   <body>
     <aside class="sidebar">
       <div class="brand">
-        <span class="brand-badge">
+        <button class="brand-badge" id="sidebar-toggle" type="button" title="Collapse sidebar">
           <img class="brand-mark" src="./icon.png" alt="" aria-hidden="true" />
-        </span>
+          <svg class="brand-toggle-icon brand-toggle-close" viewBox="0 -960 960 960" aria-hidden="true">
+            <path d="M648-324v-312L480-480l168 156ZM211-144q-27.64 0-47.32-19.68T144-211v-538q0-27.64 19.68-47.32T211-816h538q27.64 0 47.32 19.68T816-749v538q0 27.64-19.68 47.32T749-144H211Zm197-72h336v-528H408v528Z" />
+          </svg>
+          <svg class="brand-toggle-icon brand-toggle-open" viewBox="0 -960 960 960" aria-hidden="true">
+            <path d="M648-324v-312L480-480l168 156ZM211-144q-27.64 0-47.32-19.68T144-211v-538q0-27.64 19.68-47.32T211-816h538q27.64 0 47.32 19.68T816-749v538q0 27.64-19.68 47.32T749-144H211Zm197-72h336v-528H408v528Z" />
+          </svg>
+        </button>
         <span class="brand-text">
           <span class="brand-name">
             <span class="brand-name-text">Screenshotify</span>
@@ -35,7 +41,7 @@
               <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
             </g>
           </svg>
-          Review <span class="badge" id="tab-badge" hidden>0</span>
+          <span class="tab-label">Review</span> <span class="badge" id="tab-badge" hidden>0</span>
         </button>
         <button class="tab" role="tab" data-view="history">
           <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -43,7 +49,7 @@
             <line class="tab-icon-clock-hour" x1="12" y1="12" x2="16" y2="14" />
             <line class="tab-icon-clock-minute" x1="12" y1="6" x2="12" y2="12" />
           </svg>
-          History
+          <span class="tab-label">History</span>
         </button>
         <button class="tab" role="tab" data-view="settings">
           <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -64,7 +70,7 @@
               <path d="m11 13.73-4 6.93" />
             </g>
           </svg>
-          Settings
+          <span class="tab-label">Settings</span>
         </button>
       </nav>
 
@@ -208,7 +214,12 @@
       <section class="view" id="view-settings">
         <div class="settings-wrap">
           <fieldset class="card">
-            <legend>AI provider</legend>
+            <legend>
+              <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
+                <path d="M264-96v-175q-57-48-88.5-115.57T144-529q0-139.58 98.29-237.29Q340.58-864 481-864q109 0 196 58.5T792-653l66 223q5 17.48-5.5 31.74Q842-384 824-384h-56v120q0 29.7-21.15 50.85Q725.7-192 696-192h-96v96H264Zm138.14-276q37.86 0 63.93-26.12l143.86-144.11Q636-568.34 636-606.17T609.86-670q-26.14-26-64-26T482-670q-32-11-63.5-6.5T361-646q-25 25-30 56.5t7 63.5q-26 26.18-26 64.09Q312-424 338.14-398t64 26Z" />
+              </svg>
+              AI provider
+            </legend>
             <p class="card-hint">
               Any OpenAI-compatible endpoint that accepts image input: OpenAI,
               OpenRouter, Ollama, LM Studio, vLLM, and others. Your key is stored
@@ -259,7 +270,33 @@
           </fieldset>
 
           <fieldset class="card">
-            <legend>Watched folders</legend>
+            <legend>
+              <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
+                <path d="M624-192v-288h144v288H624Zm-216 0v-576h144v576H408Zm-216 0v-384h144v384H192Z" />
+              </svg>
+              Usage
+            </legend>
+            <p class="card-hint">
+              Every model Screenshotify has actually sent a request to, and how
+              many tokens each one has used. Kept on this device only.
+            </p>
+            <div class="usage-totals" id="usage-totals" hidden>
+              <span><strong id="usage-total-requests">0</strong> requests</span>
+              <span><strong id="usage-total-input">0</strong> input tokens</span>
+              <span><strong id="usage-total-output">0</strong> output tokens</span>
+            </div>
+            <div class="usage-list" id="usage-list"></div>
+            <p class="usage-empty" id="usage-empty">No requests sent yet.</p>
+            <button class="btn btn-sm" id="btn-reset-stats">Reset usage stats</button>
+          </fieldset>
+
+          <fieldset class="card">
+            <legend>
+              <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
+                <path d="M168-192q-29 0-50.5-21.5T96-264v-432q0-30 21.5-51t50.5-21h216l96 96h312q30 0 51 21t21 51v336q0 29-21 50.5T792-192H168Z" />
+              </svg>
+              Watched folders
+            </legend>
             <p class="card-hint">
               New image files in these folders are picked up automatically.
               Subfolders are included.
@@ -270,7 +307,12 @@
           </fieldset>
 
           <fieldset class="card">
-            <legend>Naming</legend>
+            <legend>
+              <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
+                <path d="M168-96q-29.7 0-50.85-21.15Q96-138.3 96-168v-432q0-29.7 21.15-50.85Q138.3-672 168-672h216v-120q0-29.7 21.15-50.85Q426.3-864 456-864h48q29.7 0 50.85 21.15Q576-821.7 576-792v120h216q29.7 0 50.85 21.15Q864-629.7 864-600v432q0 29.7-21.15 50.85Q821.7-96 792-96H168Zm72-144h240v-23q0-17.63-9.5-32.67Q461-310.7 444-319q-20-8-40.5-12.5T360-336q-23 0-43.5 4.5T276-318.53q-17 7.53-26.5 22.66Q240-280.74 240-263v23Zm336-48h144v-72H576v72Zm-173.5-89.5Q420-395 420-420t-17.5-42.5Q385-480 360-480t-42.5 17.5Q300-445 300-420t17.5 42.5Q335-360 360-360t42.5-17.5ZM576-408h144v-72H576v72ZM456-600h48v-192h-48v192Z" />
+              </svg>
+              Naming
+            </legend>
 
             <div class="field">
               <span class="field-label">Filename style</span>
@@ -354,7 +396,12 @@
           </fieldset>
 
           <fieldset class="card">
-            <legend>Behaviour</legend>
+            <legend>
+              <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
+                <path d="M168-264q-29.7 0-50.85-21.15Q96-306.3 96-336v-408q0-29.7 21.15-50.85Q138.3-816 168-816h624q29.7 0 50.85 21.15Q864-773.7 864-744v408q0 29.7-21.15 50.85Q821.7-264 792-264H168ZM48-144v-72h864v72H48Z" />
+              </svg>
+              Behaviour
+            </legend>
 
             <div class="field">
               <span class="field-label">Photos per row</span>
@@ -465,7 +512,12 @@
           </fieldset>
 
           <fieldset class="card">
-            <legend>Updates</legend>
+            <legend>
+              <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
+                <path d="M480-144q-70 0-131.13-26.6-61.14-26.6-106.4-71.87-45.27-45.26-71.87-106.4Q144-410 144-480t26.6-131.13q26.6-61.14 71.87-106.4 45.26-45.27 106.4-71.87Q410-816 480-816q81 0 149.5 35T744-686v-130h72v240H576v-72h107q-35.91-44.8-88.45-70.4Q542-744 480-744q-109 0-186.5 77.5T216-480q0 109 77.5 186.5T480-216q109 0 186.5-77.5T744-480h72q0 140-98 238t-238 98Zm100-200L444-480v-192h72v162l115 115-51 51Z" />
+              </svg>
+              Updates
+            </legend>
             <label class="check">
               <input type="checkbox" id="set-auto-update" />
               <div class="checkmark"></div>

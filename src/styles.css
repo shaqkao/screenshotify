@@ -100,6 +100,7 @@ a { color: var(--accent); }
 .sidebar {
   flex: 0 0 auto;
   width: 224px;
+  transition: width 0.2s ease;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -131,13 +132,21 @@ a { color: var(--accent); }
   padding: 2px 4px 20px;
 }
 
+/* Also the sidebar collapse/expand toggle — a <button> now, not a <span>, so
+   it's keyboard/screen-reader reachable like any other control. */
 .brand-badge {
+  position: relative;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
+  padding: 0;
   border-radius: 10px;
   background: var(--bg-elev);
   border: 1px solid var(--border);
@@ -149,7 +158,47 @@ a { color: var(--accent); }
   height: 26px;
   object-fit: contain;
   display: block;
+  transition: opacity 0.15s ease;
 }
+
+/* On hover, the logo swaps for a hint of what clicking will do: the panel
+   glyph for "close" while the sidebar is open, or "open" once it's
+   collapsed. Both icons are laid on top of the logo (inset: 0) rather than
+   swapped via JS/src changes, so it's a pure CSS opacity cross-fade. */
+.brand-toggle-icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 20px;
+  height: 20px;
+  /* The source SVGs' own fill, kept as a literal color rather than an
+     accent token — this glyph is meant to read the same regardless of
+     theme, matching the pasted design exactly. */
+  color: #ffdaab;
+  fill: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+/* panel-open.svg and panel-close.svg ship as literally the same artwork
+   (identical path data) — rendered as-is, hovering the collapsed sidebar
+   looked like it was still showing the "close" glyph, because pixel for
+   pixel it was. Mirroring this one horizontally is what actually makes
+   "open" read as a distinct, opposite action: the source glyph's arrow
+   points left (into the panel, i.e. collapsing it) and its highlighted
+   panel sits on the right; flipped, the arrow points right (expanding
+   outward) and the highlight moves to the left — the side this sidebar
+   itself expands into. */
+.brand-toggle-open {
+  transform: scaleX(-1);
+}
+
+.brand-badge:hover .brand-mark { opacity: 0; }
+.brand-badge:hover .brand-toggle-close { opacity: 1; }
+
+.sidebar.is-collapsed .brand-badge:hover .brand-toggle-close { opacity: 0; }
+.sidebar.is-collapsed .brand-badge:hover .brand-toggle-open { opacity: 1; }
 
 .brand-text {
   display: flex;
@@ -563,6 +612,45 @@ a { color: var(--accent); }
   }
 }
 
+/* Collapsed sidebar: narrows to an icon rail (toggled by clicking the logo,
+   main.js). Labels are hidden rather than removed, so nothing needs
+   re-rendering — just narrower CSS. 72px fits the 36px logo/icon badges with
+   room either side; tab buttons re-center their icon once there's no label
+   next to it to left-align against. */
+.sidebar.is-collapsed { width: 72px; }
+
+.sidebar.is-collapsed .brand { justify-content: center; }
+
+.sidebar.is-collapsed .brand-text,
+.sidebar.is-collapsed .tabs-label,
+.sidebar.is-collapsed .tab-label,
+.sidebar.is-collapsed .watch-pill {
+  display: none;
+}
+
+.sidebar.is-collapsed .tab {
+  justify-content: center;
+  gap: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* The Review count normally sits inline after the label; with the label
+   hidden, inline would leave it floating in the middle of the icon rail
+   next to a bare icon. Pinned to the tab's own corner instead, like a
+   notification count on an app icon — .tab is already position: relative
+   (it hosts .tab-pill), so this needs no extra wrapper. */
+.sidebar.is-collapsed .badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  z-index: 1;
+}
+
 /* ─────────────────────────────── Views ─────────────────────────────── */
 main {
   flex: 1 1 auto;
@@ -580,11 +668,9 @@ main {
 .view.is-active { display: flex; }
 
 .toolbar {
-  /* Own stacking context, above #history-list/#history-empty's (z-index: 0,
-     set for an unrelated reason — see the comment there) — without this,
-     the filter dropdown's panel, despite its own z-index, was rendering
-     underneath #history-empty's inset-shadow vignette wherever the two
-     happened to spatially overlap just below the toolbar. */
+  /* Own stacking context so the filter dropdown's panel (and anything else
+     from the toolbar) reliably paints above the list below it, regardless of
+     what the list's own background/stacking setup happens to be. */
   position: relative;
   z-index: 10;
   flex: 0 0 auto;
@@ -649,7 +735,6 @@ main {
   box-shadow: none;
 }
 
-.search-label input:focus + .search-filter,
 .search-label input:valid + .search-filter {
   display: none;
 }
@@ -859,6 +944,7 @@ main {
 .list {
   flex: 1 1 auto;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 12px 16px 24px;
   display: flex;
   flex-direction: column;
@@ -871,11 +957,67 @@ main {
    the Review and History lists. Cards keep the thumbnail on the left and the
    description on the right, same as the single-column list — only the
    actions/footer row (too many controls to fit alongside a narrower card)
-   wraps onto a full-width line underneath. */
+   wraps onto a full-width line underneath.
+
+   flex-wrap, not CSS Grid: a fixed-N-track grid always creates N equal
+   columns whether or not N cards exist to fill them, so a nearly-empty list
+   (e.g. one card left after applying the rest) had its one card squeezed
+   into a single 1/N-width column instead of the width every other card
+   gets — cramped enough that the card's own thumb/text/buttons stopped
+   fitting and visibly broke.
+
+   Each card's flex-basis is its fair 1/N share, same as a grid column would
+   give it. flex-grow stays 0 — a lone trailing card does NOT stretch to
+   fill the rest of its line; it sits at the same width as every other card,
+   with empty space after it, same as any ordinary "leftover row" in a photo
+   grid. (An earlier version used flex-grow: 1 so a lone card would fill the
+   whole line instead — that fixed the squeeze but traded it for a card
+   stretched 2-3x wider than its neighbors with a large dead gap between its
+   text and its Undo/Redo button, which read as equally broken.) The actual
+   protection against squeezing is min-width: 0 below, which — despite the
+   name — doesn't force cards to zero; it only lets flex-shrink respect each
+   card's own content-driven floor (thumb + footer) instead of being able to
+   go narrower than that, so a card that doesn't fit at N-per-row still
+   correctly bumps the line down to fewer columns rather than breaking. */
 .list.is-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--list-cols, 2), 1fr);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-content: start;
+  /* Lets the @container rules below ask "how wide is *this list*", which is
+     what a card's actual per-column share depends on (list width ÷
+     --list-cols) — a plain media query only knows the window's width, not
+     how much of it this particular list/column-count combination leaves for
+     each card. */
+  container-type: inline-size;
+}
+
+.list.is-grid .row,
+.list.is-grid .hrow {
+  /* min-width: 0 is load-bearing, not defensive — without it, a long
+     filename (nowrap + ellipsis further down in .hrow-to/.row-original)
+     inflates *this* element's own automatic minimum size to fit that text,
+     even though .hrow-main already has its own min-width: 0. That inner
+     min-width: 0 only controls how .hrow-main is treated *inside* .hrow's
+     own flex layout — it does nothing for how big .hrow itself is allowed
+     to look to .list.is-grid, which is a separate, outer measurement. A card
+     with a long enough name was therefore claiming a full row to itself
+     (and forcing size-appropriate but unrelated cards next to it into their
+     own solo rows too) even with room for several cards per line — breaking
+     the "N per row" guarantee "Photos per row" is supposed to be. */
+  /* Not 0 — an explicit 0 stopped the card from ever being narrower than
+     that, i.e. no floor at all, so a lone card in an otherwise-empty list
+     (or the last, non-full line of a longer one) shrank all the way down to
+     its bare 1/N-of-the-line share even when that's too narrow for its own
+     thumbnail-plus-footer to fit without wrapping. 260px is that floor: the
+     116px thumbnail, the gap next to it, and enough width for a short
+     ellipsized name plus the Undo/Redo (or Apply/Skip) controls on one
+     line — measured against the real row/hrow markup, not guessed. Being
+     an explicit value at all (rather than the default "auto") is still
+     what matters most: it's what stops a long filename several rows down
+     from inflating this number past what's actually needed. */
+  min-width: 260px;
+  flex: 0 1 calc((100% - (var(--list-cols, 2) - 1) * 10px) / var(--list-cols, 2));
 }
 
 .list.is-grid .row {
@@ -884,8 +1026,20 @@ main {
 
 .list.is-grid .row-actions {
   grid-column: 1 / -1;
+  gap: 4px;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+/* At a card's narrowest (this app's minimum window, 3 columns), "Open
+   folder" + "Skip" + "Apply" at their normal .btn-sm size don't quite fit
+   on one line — Apply alone wrapped to a second line under the other two.
+   Trimmed padding/font close that gap without needing to shrink the actual
+   click targets much. Scoped to grid-mode cards specifically, not .btn-sm
+   globally — the flat single-column list always has room to spare. */
+.list.is-grid .row-actions .btn {
+  padding: 4px 6px;
+  font-size: 11.5px;
 }
 
 .list.is-grid .hrow {
@@ -899,6 +1053,78 @@ main {
   justify-content: space-between;
 }
 
+/* Below the width where N cards can sit thumbnail-left/details-right at the
+   260px horizontal floor each (N × 260px + (N-1) × 10px gap), a card flips
+   to thumbnail-on-top/details-below instead — "Photos per row" then keeps
+   its promised column count by needing much less width per card, rather
+   than by falling back to fewer, wider columns. A stacked card's own floor
+   drops to 140px (no more fixed-width thumbnail competing side-by-side with
+   the text — just enough left for its narrowest single control to avoid
+   wrapping badly), which is comfortably under what N columns leave per card
+   at this app's actual minimum window size, so the fallback never triggers
+   at any supported column count.
+
+   One @container block per --list-cols value, not a formula, because
+   @container conditions can't reference a custom property's value (the
+   condition is evaluated before it), and "Photos per row" only ever offers
+   1–3 (main.js: applyListColumns / review.js: setColumns) — three fixed
+   breakpoints is simpler and more robust than trying to compute one. */
+@container (max-width: 799px) {
+  .list[data-cols="3"].is-grid .row,
+  .list[data-cols="3"].is-grid .hrow {
+    min-width: 140px;
+  }
+
+  .list[data-cols="3"].is-grid .row {
+    grid-template-columns: 1fr;
+  }
+
+  .list[data-cols="3"].is-grid .hrow {
+    /* flex-wrap: wrap (set unconditionally further up, for the horizontal
+       layout's footer-wraps-below trick) combined with flex-direction:
+       column on a height:auto container stopped align-items: stretch from
+       giving .hrow-main a real width — it sized to its own content instead
+       (the full unellipsized title) and silently overflowed .hrow's own
+       overflow: hidden, which clipped it with a raw cut instead of the "…"
+       .hrow-to is actually set up to show. A single vertical stack never
+       needs to wrap into a second column, so nowrap removes the conflict. */
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+  }
+
+  .list[data-cols="3"].is-grid .thumb-wrap {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@container (max-width: 529px) {
+  .list[data-cols="2"].is-grid .row,
+  .list[data-cols="2"].is-grid .hrow {
+    min-width: 140px;
+  }
+
+  .list[data-cols="2"].is-grid .row {
+    grid-template-columns: 1fr;
+  }
+
+  .list[data-cols="2"].is-grid .hrow {
+    /* See the matching cols="3" rule above for why flex-wrap: nowrap here
+       is load-bearing, not tidiness. */
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+  }
+
+  .list[data-cols="2"].is-grid .thumb-wrap {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+}
+
 /* ─────────────────────────── Review row ─────────────────────────── */
 .row {
   display: grid;
@@ -910,6 +1136,12 @@ main {
   border-radius: var(--radius);
   padding: 10px;
   box-shadow: var(--shadow);
+  /* A card is meant to be a self-contained box — nothing inside it should
+     ever be able to render past its own rounded edge. overflow: hidden
+     doesn't clip the card's own box-shadow above (that's painted outside
+     the border regardless of the card's own overflow), only descendants,
+     so it's a pure safety net here, not a visual change on its own. */
+  overflow: hidden;
 }
 
 .row.is-error { border-color: color-mix(in srgb, var(--err) 45%, var(--border)); }
@@ -1071,6 +1303,13 @@ main {
   padding: 7px 10px;
   margin-bottom: 5px;
   user-select: text;
+  /* A long suggested filename otherwise just gets cut off mid-character at
+     the input's edge with no indication there's more of it — this ellipsizes
+     it like every other name/path in the app. Browsers automatically suspend
+     this in favor of the normal scrolling caret while the field is focused
+     and being edited, so it only applies at rest. */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .name-input:hover { border-color: var(--border); }
@@ -1133,6 +1372,8 @@ main {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 10px 12px;
+  /* Same containment guarantee as .row above — see its comment. */
+  overflow: hidden;
 }
 
 .hrow-main { min-width: 0; flex: 1 1 auto; }
@@ -1199,14 +1440,30 @@ main {
 
 .empty[hidden] { display: none; }
 
-/* camera.png watermark for the Review panel specifically (History gets its
-   own history.png watermark below, via the same technique) — applied to
-   both #review-list and #review-empty, whichever is showing, so it stays
-   put whether the queue is empty or has screenshots in it. Native 500x500
-   size, darkened by a black overlay regardless of light/dark theme. */
+/* camera.png / history.png watermarks for Review/History. Applied as a
+   direct background-image on the scrolling #review-list/#history-list (and
+   their .empty siblings), not on a ::before — a ::before positioned with
+   `inset:0` is still a descendant of the scrolling element, so it scrolled
+   away with the row content instead of staying put. A background-image on
+   the element's own box uses the default `background-attachment: scroll`,
+   which (despite the name) is fixed *relative to the box*, not the content
+   that scrolls inside it — confirmed by scrolling a long list in a headless
+   probe and sampling where the artwork landed at scrollTop 0 vs. 400: same
+   screen position both times. History previously used a ::before so its
+   extra inset-shadow vignette wouldn't also darken the .hrow cards sitting
+   on top of it; that vignette is dropped here along with the ::before, since
+   there's no way to keep a per-layer effect once it's just the box's own
+   background. Both still get the same flat 0.55 black overlay for text
+   legibility over the artwork. */
+#review-list,
+#review-empty,
+#history-list,
+#history-empty {
+  background-color: var(--sidebar-bg);
+}
+
 #review-list,
 #review-empty {
-  background-color: var(--sidebar-bg);
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
     url(../camera.png);
@@ -1215,68 +1472,19 @@ main {
   background-size: cover, auto;
 }
 
-/* Scoped to Review's empty state only — History's empty state shares .empty
-   but has no watermark behind it, so it must keep the normal theme tokens. */
-#review-empty {
-  --text: #f2f2f2;
-  --text-dim: #c7c7c7;
-}
-
-/* history.png watermark for the History panel, same technique as Review's
-   camera.png above — applied to both #history-list and #history-empty so it
-   stays put whether the list is empty or has rows in it. Scaled to the
-   panel's own height (width auto, so its aspect ratio is preserved) and
-   centered, rather than Review's native-size camera.png, plus a flat overlay
-   for legibility across the center regardless of light/dark theme, and a
-   vignette that gets darker toward the edges for a soft edge feel.
-
-   Painted on a ::before instead of directly on the element's own background
-   so the vignette only affects the watermark, not descendants — putting it
-   on the element itself would also darken .row cards near the edges. The
-   ::before needs its own stacking context (position + z-index) so its
-   z-index:-1 doesn't escape and paint behind the panel's own background —
-   see the .watch-pill fix above for why that matters.
-
-   The vignette used to be a third layer stacked into this same
-   background-image list (radial-gradient(...), linear-gradient(...),
-   url(history.png)) — three layers, one of them a real image file. That
-   combination silently failed to paint the image layer at all in the real
-   Tauri/WebView2 window (confirmed by reproducing it in `npm run tauri dev`
-   and by sampling the rendered pixels: perfectly flat, no trace of the
-   artwork), even though it rendered correctly in every plain-browser test
-   (Vite dev server, `vite preview`, real markup). Review's simpler two-layer
-   version (linear-gradient + url(camera.png), no radial-gradient) was never
-   reported broken. Dropping to that same two-layer shape here and moving the
-   vignette to an inset box-shadow on the same pseudo-element — a completely
-   different rendering path that doesn't touch background-image at all —
-   sidesteps whatever the WebView2-specific failure mode was, rather than
-   continuing to chase its exact cause. */
 #history-list,
 #history-empty {
-  position: relative;
-  z-index: 0;
-  background-color: var(--sidebar-bg);
-}
-
-#history-list::before,
-#history-empty::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
     url(../history.png);
   background-repeat: no-repeat, no-repeat;
   background-position: center, center;
   background-size: cover, auto 100%;
-  /* Toned down from 0.92 — at full strength this crushed the whole panel
-     toward black, well past --sidebar-bg (its own base color, set on the
-     real element behind this pseudo) and out of step with Review's plain
-     0.55 flat overlay, which has no vignette at all. */
-  box-shadow: inset 0 0 140px 50px rgba(0, 0, 0, 0.55);
 }
 
+/* Both watermarked panels' empty states need light text over the dark
+   artwork, rather than the normal (dark-on-light-ish) theme tokens. */
+#review-empty,
 #history-empty {
   --text: #f2f2f2;
   --text-dim: #c7c7c7;
@@ -1335,12 +1543,22 @@ main {
 }
 
 .card legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-weight: 650;
   font-size: 13px;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--text-dim);
   padding: 0 6px;
+}
+
+.card-icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  fill: currentColor;
 }
 
 .card-hint {
@@ -1626,6 +1844,80 @@ select { cursor: pointer; }
   font-size: 12.5px;
   font-style: italic;
   padding: 4px 0;
+}
+
+.usage-totals {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  margin: -6px 0 12px;
+}
+
+.usage-totals strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
+.usage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.usage-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+}
+
+.usage-item.is-current {
+  border-color: var(--accent);
+}
+
+.usage-model {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 12px;
+  user-select: text;
+}
+
+.usage-current-badge {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+
+.usage-stat {
+  flex: none;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.usage-empty {
+  color: var(--text-faint);
+  font-size: 12.5px;
+  font-style: italic;
+  padding: 4px 0;
+  margin: 0 0 12px;
 }
 
 /* ─────────────────────────────── Toasts ─────────────────────────────── */

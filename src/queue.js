@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { getSettings } from "./settings.js";
 import { buildStem } from "./naming.js";
+import { recordUsage } from "./stats.js";
 
 /**
  * Holds every screenshot awaiting review and runs the AI calls with a bounded
@@ -194,13 +195,17 @@ async function run(item) {
 
   const settings = getSettings();
   try {
-    const raw = await invoke("suggest_filename", {
+    const result = await invoke("suggest_filename", {
       path: item.path,
       baseUrl: settings.baseUrl,
       model: settings.model,
       prompt: buildPrompt(settings),
       maxEdge: settings.maxEdge,
     });
+    const raw = result.text;
+    recordUsage(result.model, result.prompt_tokens, result.completion_tokens).catch((err) =>
+      console.error("failed to record usage stats", err)
+    );
 
     const stem = buildStem({
       raw,

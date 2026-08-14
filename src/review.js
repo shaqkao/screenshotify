@@ -26,6 +26,7 @@ export function setColumns(n) {
   const cols = Math.min(3, Math.max(1, Number(n) || 1));
   listEl.classList.toggle("is-grid", cols > 1);
   listEl.style.setProperty("--list-cols", cols);
+  listEl.dataset.cols = cols;
 }
 
 export function initReview() {
@@ -310,6 +311,13 @@ export async function applyOne(id) {
       action: { label: "Undo", onClick: () => history.undo(entry.id) },
     });
   }
+}
+
+export function skipAll() {
+  for (const item of queue.allItems()) {
+    if (item.status === "ready") queue.removeItem(item.id);
+  }
+  refreshChrome();
 }
 
 export async function applyAll() {

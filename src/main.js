@@ -4,25 +4,22 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { getVersion } from "@tauri-apps/api/app";
 import { ask, open as openDialog } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import {
-  isPermissionGranted,
-  onAction,
-  requestPermission,
-  sendNotification,
-} from "@tauri-apps/plugin-notification";
+import { isPermissionGranted, requestPermission } from "@tauri-apps/plugin-notification";
 import { enable as enableAutostart, disable as disableAutostart, isEnabled as autostartEnabled } from "@tauri-apps/plugin-autostart";
 
 import {
   initSettings,
   getSettings,
   updateSettings,
+  onSettingsChange,
   saveApiKey,
   clearApiKey,
   hasApiKey,
 } from "./settings.js";
+import { initStats, getModelUsage, onStatsChange, resetStats } from "./stats.js";
 import * as queue from "./queue.js";
 import * as history from "./history.js";
-import { initReview, applyAll, refreshChrome, formatFileInfo, openLightbox, setColumns } from "./review.js";
+import { initReview, applyAll, skipAll, refreshChrome, formatFileInfo, openLightbox, setColumns } from "./review.js";
 import { toast } from "./toast.js";
 
 const REPO_URL = "https://github.com/screenshotify/screenshotify";
@@ -40,10 +37,12 @@ let pendingNotifyCount = 0;
 
 async function main() {
   await initSettings();
+  await initStats();
   await history.initHistory();
 
   initReview();
   applyListColumns();
+  initSidebarToggle();
   initTabs();
   initReviewToolbar();
   initHistoryView();
@@ -83,6 +82,27 @@ async function showWindowIfWanted() {
   } catch (err) {
     console.error("could not show the window", err);
   }
+}
+
+/* ══════════════════════════ Sidebar ══════════════════════════ */
+
+function initSidebarToggle() {
+  const sidebar = document.querySelector(".sidebar");
+  const toggle = $("sidebar-toggle");
+
+  const apply = (collapsed) => {
+    sidebar.classList.toggle("is-collapsed", collapsed);
+    toggle.title = collapsed ? "Expand sidebar" : "Collapse sidebar";
+    toggle.setAttribute("aria-expanded", String(!collapsed));
+  };
+
+  apply(!!getSettings().sidebarCollapsed);
+
+  toggle.addEventListener("click", async () => {
+    const collapsed = !sidebar.classList.contains("is-collapsed");
+    apply(collapsed);
+    await updateSettings({ sidebarCollapsed: collapsed });
+  });
 }
 
 /* ══════════════════════════ Tabs ══════════════════════════ */
@@ -175,6 +195,19 @@ function initBackendEvents() {
 
   listen("screenshotify://show-review", () => showView("review"));
 
+  // Our own Windows toast (src-tauri/src/toast.rs) reports which button, if
+  // any, the user clicked.
+  listen("screenshotify://toast-action", async (event) => {
+    if (event.payload === "accept") {
+      await applyAll();
+    } else if (event.payload === "ignore") {
+      skipAll();
+    } else {
+      await invoke("show_main_window").catch(() => {});
+      showView("review");
+    }
+  });
+
   queue.onQueueChange((type) => {
     if (type === "update" || type === "add") updateTrayTooltip();
   });
@@ -188,17 +221,6 @@ async function initNotifications() {
     if (!notifyAllowed) notifyAllowed = (await requestPermission()) === "granted";
   } catch {
     notifyAllowed = false;
-  }
-
-  // Best effort: not every platform reports toast activation back to the app.
-  // When it does not, the tray icon remains the reliable way in.
-  try {
-    await onAction(async () => {
-      await invoke("show_main_window").catch(() => {});
-      showView("review");
-    });
-  } catch {
-    /* activation callbacks are unavailable on this platform */
   }
 }
 
@@ -219,10 +241,9 @@ function scheduleNotification() {
     const win = getCurrentWindow();
     if ((await win.isVisible()) && (await win.isFocused())) return;
 
-    sendNotification({
-      title: count === 1 ? "Screenshot ready to rename" : `${count} screenshots ready to rename`,
-      body: "Click to review the suggested names.",
-    });
+    await invoke("notify_review_ready", { count }).catch((err) =>
+      console.error("failed to show notification", err)
+    );
   }, 2500);
 }
 
@@ -544,6 +565,7 @@ function applyListColumns() {
   const cols = Math.min(3, Math.max(1, Number(n) || 1));
   list.classList.toggle("is-grid", cols > 1);
   list.style.setProperty("--list-cols", cols);
+  list.dataset.cols = cols;
 }
 
 // Material Symbols "undo"/"redo" glyphs (960x960 viewBox), inlined so the
@@ -770,6 +792,15 @@ async function initSettingsForm() {
   $("btn-load-models").addEventListener("click", loadModels);
   $("btn-test").addEventListener("click", testConnection);
 
+  // — usage —
+  renderUsage();
+  onStatsChange(renderUsage);
+  onSettingsChange(renderUsage); // re-highlight the current model when it changes
+  $("btn-reset-stats").addEventListener("click", async () => {
+    await resetStats();
+    toast("Usage stats reset.", { kind: "info" });
+  });
+
   // — folders —
   $("btn-add-folder").addEventListener("click", addFolder);
   $("btn-add-default").addEventListener("click", addDefaultFolders);
@@ -928,6 +959,73 @@ async function renderKeyStatus() {
 }
 
 /* ── Folders ──────────────────────────────────────────────────────────── */
+
+function renderUsage() {
+  const host = $("usage-list");
+  const totalsEl = $("usage-totals");
+  const emptyEl = $("usage-empty");
+  host.textContent = "";
+
+  const usage = getModelUsage();
+  const modelIds = Object.keys(usage).sort((a, b) => (usage[b].lastUsed || 0) - (usage[a].lastUsed || 0));
+
+  if (!modelIds.length) {
+    totalsEl.hidden = true;
+    emptyEl.hidden = false;
+    return;
+  }
+  emptyEl.hidden = true;
+  totalsEl.hidden = false;
+
+  const currentModel = getSettings().model?.trim();
+  let totalRequests = 0;
+  let totalInput = 0;
+  let totalOutput = 0;
+
+  for (const id of modelIds) {
+    const entry = usage[id];
+    totalRequests += entry.requests;
+    totalInput += entry.promptTokens;
+    totalOutput += entry.completionTokens;
+
+    const row = document.createElement("div");
+    row.className = "usage-item" + (id === currentModel ? " is-current" : "");
+
+    const name = document.createElement("span");
+    name.className = "usage-model";
+    name.textContent = id;
+    name.title = id;
+    row.append(name);
+
+    if (id === currentModel) {
+      const badge = document.createElement("span");
+      badge.className = "usage-current-badge";
+      badge.textContent = "Current";
+      row.append(badge);
+    }
+
+    const requests = document.createElement("span");
+    requests.className = "usage-stat";
+    requests.textContent = `${entry.requests.toLocaleString()} req${entry.requests === 1 ? "" : "s"}`;
+    row.append(requests);
+
+    const input = document.createElement("span");
+    input.className = "usage-stat";
+    input.textContent = `${entry.promptTokens.toLocaleString()} in`;
+    row.append(input);
+
+    const output = document.createElement("span");
+    output.className = "usage-stat";
+    output.textContent = `${entry.completionTokens.toLocaleString()} out`;
+    row.append(output);
+
+    host.append(row);
+  }
+
+  $("usage-total-requests").textContent = totalRequests.toLocaleString();
+  $("usage-total-input").textContent = totalInput.toLocaleString();
+  $("usage-total-output").textContent = totalOutput.toLocaleString();
+}
 
 function renderFolders() {
   const host = $("folder-list");

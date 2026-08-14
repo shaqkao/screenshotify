@@ -2,6 +2,7 @@ mod ai;
 mod files;
 mod imaging;
 mod secrets;
+mod toast;
 mod watcher;
 
 use std::os::windows::process::CommandExt;
@@ -148,7 +149,7 @@ async fn suggest_filename(
     model: String,
     prompt: String,
     max_edge: u32,
-) -> Result<String, String> {
+) -> Result<ai::SuggestResult, String> {
     let image = {
         let p = PathBuf::from(&path);
         tauri::async_runtime::spawn_blocking(move || imaging::encode_downscaled(&p, max_edge, 85))
@@ -344,6 +345,7 @@ pub fn run() {
             stop_watching,
             watched_folders,
             set_tray_state,
+            toast::notify_review_ready,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Screenshotify");

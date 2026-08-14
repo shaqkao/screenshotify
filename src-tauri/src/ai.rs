@@ -17,6 +17,34 @@ const USER_AGENT: &str = concat!("Screenshotify/", env!("CARGO_PKG_VERSION"));
 struct ChatResponse {
     choices: Option<Vec<Choice>>,
     error: Option<ApiError>,
+    usage: Option<Usage>,
+}
+
+#[derive(Deserialize, Default)]
+struct Usage {
+    prompt_tokens: Option<u32>,
+    completion_tokens: Option<u32>,
+}
+
+/// A reply plus the token counts the endpoint billed it as, when it reports
+/// them — some OpenAI-compatible servers omit `usage` entirely, in which case
+/// both counts are just 0 rather than an error, since the filename suggestion
+/// itself is what actually matters.
+struct ChatReply {
+    text: String,
+    prompt_tokens: u32,
+    completion_tokens: u32,
+}
+
+/// What the frontend gets back from a successful suggestion: the filename
+/// text plus enough to attribute the request to a model for the Settings
+/// usage view.
+#[derive(serde::Serialize)]
+pub struct SuggestResult {
+    pub text: String,
+    pub model: String,
+    pub prompt_tokens: u32,
+    pub completion_tokens: u32,
 }
 
 #[derive(Deserialize)]
@@ -110,7 +138,7 @@ async fn post_chat(
     image_data_url: &str,
     max_tokens: u32,
     timeout: Duration,
-) -> Result<String, String> {
+) -> Result<ChatReply, String> {
     let url = endpoint(base_url, "/chat/completions")?;
     let model = model.trim();
     if model.is_empty() {
@@ -190,6 +218,7 @@ async fn post_chat(
         return Err(err);
     }
 
+    let usage = parsed.usage.unwrap_or_default();
     let content = parsed
         .choices
         .and_then(|c| c.into_iter().next())
@@ -204,7 +233,11 @@ async fn post_chat(
         );
     }
 
-    Ok(content)
+    Ok(ChatReply {
+        text: content,
+        prompt_tokens: usage.prompt_tokens.unwrap_or(0),
+        completion_tokens: usage.completion_tokens.unwrap_or(0),
+    })
 }
 
 /// Asks the model for a filename. `image_data_url` is produced by `imaging`.
@@ -213,8 +246,8 @@ pub async fn suggest(
     model: &str,
     prompt: &str,
     image_data_url: &str,
-) -> Result<String, String> {
-    post_chat(
+) -> Result<SuggestResult, String> {
+    let reply = post_chat(
         base_url,
         model,
         prompt,
@@ -222,7 +255,13 @@ pub async fn suggest(
         64,
         Duration::from_secs(120),
     )
-    .await
+    .await?;
+    Ok(SuggestResult {
+        text: reply.text,
+        model: model.trim().to_string(),
+        prompt_tokens: reply.prompt_tokens,
+        completion_tokens: reply.completion_tokens,
+    })
 }
 
 /// Sends a tiny generated image so the user finds out now — not on their first
@@ -238,7 +277,7 @@ pub async fn test(base_url: &str, model: &str) -> Result<String, String> {
         Duration::from_secs(60),
     )
     .await?;
-    Ok(truncate(&reply, 120))
+    Ok(truncate(&reply.text, 120))
 }
 
 /// Best-effort model list for the suggestions dropdown. Many local servers

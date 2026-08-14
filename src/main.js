@@ -436,19 +436,6 @@ function applyHistoryFilter() {
   renderHistory(filtered);
 }
 
-// Steps history-status-filter to its next value and fires "change" so both
-// enhanceSelect's own sync (the separate "All ▾" dropdown) and the listener
-// below (historyFilter + the filter button's is-active glow) pick it up —
-// one source of truth shared by two entry points into the same status.
-const HISTORY_STATUS_ORDER = ["all", "active", "undone"];
-
-function cycleHistoryStatus() {
-  const select = $("history-status-filter");
-  const next = HISTORY_STATUS_ORDER[(HISTORY_STATUS_ORDER.indexOf(select.value) + 1) % HISTORY_STATUS_ORDER.length];
-  select.value = next;
-  select.dispatchEvent(new Event("change", { bubbles: true }));
-}
-
 function initHistoryView() {
   $("history-search").addEventListener("input", (ev) => {
     historyFilter.query = ev.target.value.trim().toLowerCase();
@@ -457,17 +444,10 @@ function initHistoryView() {
 
   $("history-status-filter").addEventListener("change", (ev) => {
     historyFilter.status = ev.target.value;
-    $("history-filter-btn").classList.toggle("is-active", historyFilter.status !== "all");
+    $("history-filter-trigger").classList.toggle("is-filtered", historyFilter.status !== "all");
     applyHistoryFilter();
   });
   enhanceSelect($("history-status-filter"));
-
-  $("history-filter-btn").addEventListener("click", (ev) => {
-    // Without this, the click also bubbles to the wrapping <label>, which
-    // would additionally focus the search input right after cycling.
-    ev.stopPropagation();
-    cycleHistoryStatus();
-  });
 
   $("btn-undo-last").addEventListener("click", async () => {
     const res = await history.undoLastBatch();

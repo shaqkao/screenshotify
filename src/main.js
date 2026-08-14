@@ -448,6 +448,16 @@ function initHistoryView() {
   });
   enhanceSelect($("history-status-filter"));
 
+  // Backs up the "/" hint shown in the search box until it has a value.
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key !== "/" || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (!$("view-history").classList.contains("is-active")) return;
+    const active = document.activeElement;
+    if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
+    ev.preventDefault();
+    $("history-search").focus();
+  });
+
   $("btn-undo-last").addEventListener("click", async () => {
     const res = await history.undoLastBatch();
     if (!res.count && !res.failed) {

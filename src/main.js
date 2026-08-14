@@ -732,7 +732,8 @@ async function initSettingsForm() {
   bindSelect("set-date-prefix", "datePrefix", () => queue.restyleAll());
   enhanceSelect($("set-case-style"));
   enhanceSelect($("set-date-prefix"));
-  bindRange("set-max-words", "maxWords", "max-words-out", () => queue.restyleAll());
+  bindSelectNumber("set-max-words", "maxWords", () => queue.restyleAll());
+  enhanceSelect($("set-max-words"));
   bindText("set-language", "language");
   bindText("set-prompt-extra", "promptExtra");
 
@@ -745,8 +746,10 @@ async function initSettingsForm() {
   bindCheck("set-close-to-tray", "closeToTray", async () => {
     await invoke("set_close_to_tray", { enabled: getSettings().closeToTray });
   });
-  bindRange("set-concurrency", "concurrency", "concurrency-out");
-  bindRange("set-max-edge", "maxEdge", "max-edge-out");
+  bindSelectNumber("set-concurrency", "concurrency");
+  enhanceSelect($("set-concurrency"));
+  bindSelectNumber("set-max-edge", "maxEdge");
+  enhanceSelect($("set-max-edge"));
 
   // Autostart is owned by the OS, so read the real state rather than ours.
   const autostartInput = $("set-autostart");
@@ -856,14 +859,12 @@ function bindCheck(id, key, after) {
   });
 }
 
-function bindRange(id, key, outId, after) {
+// Like bindSelect, but for <select>s standing in for a numeric setting
+// (maxWords/concurrency/maxEdge), so the stored value stays a Number rather
+// than the string a <select> naturally produces.
+function bindSelectNumber(id, key, after) {
   const el = $(id);
-  const out = $(outId);
-  el.value = getSettings()[key];
-  out.textContent = el.value;
-  el.addEventListener("input", () => {
-    out.textContent = el.value;
-  });
+  el.value = String(getSettings()[key]);
   el.addEventListener("change", async () => {
     await updateSettings({ [key]: Number(el.value) });
     if (after) after();

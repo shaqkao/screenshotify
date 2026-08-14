@@ -1376,12 +1376,6 @@ select { cursor: pointer; }
   font-weight: 600;
 }
 
-input[type="range"] {
-  width: 100%;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-
 .key-row {
   display: flex;
   gap: 6px;

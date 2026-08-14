@@ -165,7 +165,28 @@
       <section class="view" id="view-history">
         <div class="toolbar">
           <div class="toolbar-left">
-            <span class="muted">Renames applied by Screenshotify. Undo restores the original filename.</span>
+            <div class="history-search">
+              <svg class="history-search-icon" viewBox="0 -960 960 960" aria-hidden="true">
+                <path d="M796-121 533-384q-30 26-69.96 40.5T378-329q-108.16 0-183.08-74.92Q120-478.84 120-587q0-108.16 74.92-183.08Q269.84-845 378-845q108.16 0 183.08 74.92Q636-695.16 636-587q0 44-14.5 84T580-434l264 263-48 50ZM378-397q69 0 116.5-47.5T542-561q0-69-47.5-116.5T378-725q-69 0-116.5 47.5T214-561q0 69 47.5 116.5T378-397Z" />
+              </svg>
+              <input type="search" id="history-search" class="history-search-input"
+                     placeholder="Search filenames…" spellcheck="false" autocomplete="off" />
+            </div>
+            <div class="csel csel-inline">
+              <input type="checkbox" class="csel-toggle" id="csel-toggle-history-status" />
+              <label class="csel-trigger" for="csel-toggle-history-status">
+                <span class="csel-value"></span>
+                <svg class="csel-arrow" viewBox="0 -960 960 960" aria-hidden="true">
+                  <path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z" />
+                </svg>
+              </label>
+              <div class="csel-panel"></div>
+              <select id="history-status-filter" class="csel-native">
+                <option value="all">All</option>
+                <option value="active">Renamed</option>
+                <option value="undone">Undone</option>
+              </select>
+            </div>
           </div>
           <div class="toolbar-right">
             <button class="btn" id="btn-undo-last">Undo last batch</button>
@@ -174,8 +195,8 @@
         </div>
         <div class="list" id="history-list"></div>
         <div class="empty" id="history-empty">
-          <h2>Nothing renamed yet</h2>
-          <p>Once you apply a suggestion it will be listed here so you can undo it.</p>
+          <h2 id="history-empty-title">Nothing renamed yet</h2>
+          <p id="history-empty-hint">Once you apply a suggestion it will be listed here so you can undo it.</p>
         </div>
       </section>
 

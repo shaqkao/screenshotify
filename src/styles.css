@@ -583,7 +583,48 @@ main {
   border-bottom: 1px solid var(--border);
 }
 
-.toolbar-left { display: flex; gap: 8px; align-items: center; }
+.toolbar-left { display: flex; gap: 8px; align-items: center; min-width: 0; }
+
+.history-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 1 240px;
+  min-width: 120px;
+}
+
+.history-search-icon {
+  position: absolute;
+  left: 9px;
+  width: 15px;
+  height: 15px;
+  fill: var(--text-faint);
+  pointer-events: none;
+}
+
+.history-search-input {
+  width: 100%;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 10px 6px 30px;
+  appearance: none;
+}
+
+.history-search-input::-webkit-search-cancel-button { display: none; }
+
+.history-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.csel-inline { flex: 0 0 auto; width: 128px; }
+.csel-inline .csel-trigger { padding: 6px 9px; font-size: 13px; }
+.csel-inline .csel-panel { width: max-content; min-width: 100%; right: auto; }
 
 .toolbar-right {
   margin-left: auto;

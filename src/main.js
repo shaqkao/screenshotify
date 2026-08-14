@@ -51,8 +51,8 @@ async function main() {
   await initNotifications();
   initBackendEvents();
 
-  history.onHistoryChange(renderHistory);
-  renderHistory(history.listEntries());
+  history.onHistoryChange(applyHistoryFilter);
+  applyHistoryFilter();
 
   await applyWatchState();
   await showWindowIfWanted();
@@ -400,7 +400,54 @@ async function pickFiles() {
 
 /* ══════════════════════════ History view ══════════════════════════ */
 
+const historyFilter = { query: "", status: "all" };
+
+function matchesHistoryFilter(entry) {
+  if (historyFilter.status === "active" && entry.undone) return false;
+  if (historyFilter.status === "undone" && !entry.undone) return false;
+  if (historyFilter.query) {
+    const toName = basename(entry.to).toLowerCase();
+    const fromName = basename(entry.from).toLowerCase();
+    if (!toName.includes(historyFilter.query) && !fromName.includes(historyFilter.query)) return false;
+  }
+  return true;
+}
+
+/**
+ * Filters history.listEntries() by the search box + status dropdown, then
+ * hands the result to renderHistory. Kept separate from renderHistory (which
+ * just patches whatever list it's given) so history.onHistoryChange can call
+ * this directly and always re-apply the current filter to fresh data.
+ */
+function applyHistoryFilter() {
+  const all = history.listEntries();
+  const filtered = all.filter(matchesHistoryFilter);
+
+  const hasFilter = historyFilter.query || historyFilter.status !== "all";
+  $("history-empty-title").textContent =
+    all.length === 0 ? "Nothing renamed yet" : "No matching renames";
+  $("history-empty-hint").textContent =
+    all.length === 0
+      ? "Once you apply a suggestion it will be listed here so you can undo it."
+      : hasFilter
+      ? "Try a different search or filter."
+      : "";
+
+  renderHistory(filtered);
+}
+
 function initHistoryView() {
+  $("history-search").addEventListener("input", (ev) => {
+    historyFilter.query = ev.target.value.trim().toLowerCase();
+    applyHistoryFilter();
+  });
+
+  $("history-status-filter").addEventListener("change", (ev) => {
+    historyFilter.status = ev.target.value;
+    applyHistoryFilter();
+  });
+  enhanceSelect($("history-status-filter"));
+
   $("btn-undo-last").addEventListener("click", async () => {
     const res = await history.undoLastBatch();
     if (!res.count && !res.failed) {

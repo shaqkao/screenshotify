@@ -15,55 +15,34 @@
   --bone-900: #211d17;
   --bone-950: #14100c;
 
-  --bg: #f6f7f9;
-  --bg-elev: #ffffff;
-  --bg-sunken: #eceef2;
+  color-scheme: dark;
+
+  --bg: #14161a;
+  --bg-elev: #1c1f25;
+  --bg-sunken: #101216;
   /* The sidebar's fixed panel color — same value regardless of theme, unlike
      --bg-sunken above. Also used as the base behind Review/History's
      watermarked list backgrounds so that area reads as the same surface as
      the sidebar instead of a much darker one. */
   --sidebar-bg: #2c2c2c;
-  --border: #dfe3ea;
-  --border-strong: #c6ccd8;
-  --text: #16181d;
-  --text-dim: #5c6472;
-  --text-faint: #8a92a1;
-  --accent: var(--bone-600);
-  --accent-hover: var(--bone-700);
-  --accent-soft: var(--bone-50);
-  --ok: #158a54;
-  --ok-soft: #e3f5ec;
-  --warn: #b45309;
-  --warn-soft: #fdf1e0;
-  --err: #c62b3d;
-  --err-soft: #fdeaec;
-  --shadow: 0 1px 2px rgba(16, 20, 30, 0.06), 0 4px 14px rgba(16, 20, 30, 0.06);
+  --border: #2b2f38;
+  --border-strong: #3d434f;
+  --text: #e8eaef;
+  --text-dim: #a3aab8;
+  --text-faint: #737b8a;
+  --accent: var(--bone-500);
+  --accent-hover: var(--bone-400);
+  --accent-soft: color-mix(in srgb, var(--bone-500) 20%, var(--bg));
+  --ok: #4ecb8d;
+  --ok-soft: #16301f;
+  --warn: #e0a458;
+  --warn-soft: #2f2413;
+  --err: #f2707f;
+  --err-soft: #33181d;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.3);
   --radius: 10px;
   --font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   --mono: "Cascadia Mono", "Consolas", ui-monospace, monospace;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14161a;
-    --bg-elev: #1c1f25;
-    --bg-sunken: #101216;
-    --border: #2b2f38;
-    --border-strong: #3d434f;
-    --text: #e8eaef;
-    --text-dim: #a3aab8;
-    --text-faint: #737b8a;
-    --accent: var(--bone-500);
-    --accent-hover: var(--bone-400);
-    --accent-soft: color-mix(in srgb, var(--bone-500) 20%, var(--bg));
-    --ok: #4ecb8d;
-    --ok-soft: #16301f;
-    --warn: #e0a458;
-    --warn-soft: #2f2413;
-    --err: #f2707f;
-    --err-soft: #33181d;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.3);
-  }
 }
 
 * { box-sizing: border-box; }

@@ -2477,7 +2477,7 @@ dependencies = [
  "log",
  "mac-notification-sys",
  "serde",
- "tauri-winrt-notification",
+ "tauri-winrt-notification 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "zbus",
 ]
 
@@ -3652,7 +3652,7 @@ dependencies = [
  "tauri-plugin-single-instance",
  "tauri-plugin-store",
  "tauri-plugin-updater",
- "tauri-winrt-notification",
+ "tauri-winrt-notification 0.7.3",
 ]
 
 [[package]]
@@ -4589,6 +4589,15 @@ dependencies = [
  "dunce",
  "embed-resource",
  "toml 1.1.4+spec-1.1.0",
+]
+
+[[package]]
+name = "tauri-winrt-notification"
+version = "0.7.3"
+dependencies = [
+ "thiserror 2.0.20",
+ "windows",
+ "windows-version",
 ]
 
 [[package]]

@@ -19,11 +19,21 @@ fn app_id(app: &AppHandle) -> String {
 }
 
 #[tauri::command]
-pub fn notify_review_ready(app: AppHandle, count: u32) -> Result<(), String> {
-    let title = if count == 1 {
-        "Screenshot ready to rename".to_string()
+pub fn notify_review_ready(app: AppHandle, names: Vec<String>) -> Result<(), String> {
+    if names.is_empty() {
+        return Ok(());
+    }
+
+    let (title, body) = if names.len() == 1 {
+        ("Screenshot ready to rename".to_string(), names[0].clone())
     } else {
-        format!("{count} screenshots ready to rename")
+        let title = format!("{} screenshots ready to rename", names.len());
+        let preview: Vec<&str> = names.iter().take(3).map(String::as_str).collect();
+        let mut body = preview.join(", ");
+        if names.len() > preview.len() {
+            body.push_str(&format!(", +{} more", names.len() - preview.len()));
+        }
+        (title, body)
     };
 
     let open_handle = app.clone();
@@ -32,7 +42,8 @@ pub fn notify_review_ready(app: AppHandle, count: u32) -> Result<(), String> {
 
     Toast::new(&app_id(&app))
         .title(&title)
-        .text1("Click to review the suggested names.")
+        .text1(&body)
+        .launch("open")
         .add_button("Accept", "accept")
         .add_button("Ignore", "ignore")
         .on_activated(move |action| {

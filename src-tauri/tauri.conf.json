@@ -15,7 +15,7 @@
       {
         "label": "main",
         "title": "Screenshotify",
-        "width": 1060,
+        "width": 1360,
         "height": 740,
         "minWidth": 880,
         "minHeight": 560,
@@ -51,14 +51,14 @@
         "displayLanguageSelector": false
       }
     },
-    "createUpdaterArtifacts": false
+    "createUpdaterArtifacts": true
   },
   "plugins": {
     "updater": {
       "endpoints": [
         "https://github.com/shaqkao/screenshotify/releases/latest/download/latest.json"
       ],
-      "pubkey": ""
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM4MURDQjVGRjc4QkY2RDYKUldUVzlvdjNYOHNkT0lqKzlub3hES0hwdldOUEpqcDJRVDA4TEtPTkRaSEpoVDZEMUc1a0hHdmkK"
     }
   }
 }

@@ -1,0 +1,29 @@
+[package]
+name = "tauri-winrt-notification"
+version = "0.7.3"
+edition = "2021"
+rust-version = "1.74"
+authors = ["allenbenz", "Tauri Programme within The Commons Conservancy"]
+description = "An incomplete wrapper over the WinRT toast api (vendored, patched to support launch=)"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/tauri-apps/winrt-notification"
+
+[lib]
+name = "tauri_winrt_notification"
+path = "src/lib.rs"
+
+[dependencies.thiserror]
+version = "2"
+
+[dependencies.windows]
+version = "0.61"
+features = [
+    "Win32_Foundation",
+    "Foundation_Collections",
+    "Win32_System_SystemInformation",
+    "Data_Xml_Dom",
+    "UI_Notifications",
+]
+
+[dependencies.windows-version]
+version = "0.1"

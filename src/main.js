@@ -32,7 +32,8 @@ const $ = (id) => document.getElementById(id);
 
 let notifyAllowed = false;
 let notifyTimer = null;
-let pendingNotifyCount = 0;
+let pendingNotifyNames = [];
+const notifiedIds = new Set();
 
 /* ══════════════════════════ Bootstrap ══════════════════════════ */
 
@@ -167,8 +168,7 @@ function initBackendEvents() {
   // A new screenshot finished being written to a watched folder.
   listen("screenshotify://file-detected", async (event) => {
     const entry = event.payload;
-    const item = queue.addFile(entry, { source: "watch" });
-    if (item) scheduleNotification();
+    queue.addFile(entry, { source: "watch" });
   });
 
   listen("screenshotify://watch-error", async (event) => {
@@ -210,8 +210,18 @@ function initBackendEvents() {
     }
   });
 
-  queue.onQueueChange((type) => {
+  queue.onQueueChange((type, item) => {
     if (type === "update" || type === "add") updateTrayTooltip();
+    if (
+      type === "update" &&
+      item &&
+      item.status === "ready" &&
+      item.source === "watch" &&
+      !notifiedIds.has(item.id)
+    ) {
+      notifiedIds.add(item.id);
+      scheduleNotification(item);
+    }
   });
 }
 
@@ -228,22 +238,24 @@ async function initNotifications() {
 
 /**
  * Screenshots often arrive in bursts. Collapsing them into one notification a
- * couple of seconds later is far less annoying than one toast per file.
+ * couple of seconds later is far less annoying than one toast per file. Fired
+ * once a suggestion is actually ready, so the toast can show the name itself
+ * instead of a generic count.
  */
-function scheduleNotification() {
+function scheduleNotification(item) {
   if (!getSettings().notifications || !notifyAllowed) return;
-  pendingNotifyCount += 1;
+  pendingNotifyNames.push(`${item.suggestion}.${item.ext}`);
   if (notifyTimer) clearTimeout(notifyTimer);
   notifyTimer = setTimeout(async () => {
-    const count = pendingNotifyCount;
-    pendingNotifyCount = 0;
+    const names = pendingNotifyNames;
+    pendingNotifyNames = [];
     notifyTimer = null;
 
     // Don't interrupt someone who is already looking at the list.
     const win = getCurrentWindow();
     if ((await win.isVisible()) && (await win.isFocused())) return;
 
-    await invoke("notify_review_ready", { count }).catch((err) =>
+    await invoke("notify_review_ready", { names }).catch((err) =>
       console.error("failed to show notification", err)
     );
   }, 2500);

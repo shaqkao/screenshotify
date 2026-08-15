@@ -30,7 +30,7 @@ Free · open source · MIT · bring your own API key
 
 ## Why
 
-`Screenshot 2026-08-12 143507.png` tells you nothing. Six months later you have
+`Screenshot 2026-08-12 143507.png` tells you **NOTHING**. Six months later you have
 four hundred of them and no way to find the one you need.
 
 Existing AI renamers are manual batch tools, subscription products, or both.

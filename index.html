@@ -226,14 +226,17 @@
               in the Windows Credential Manager, never in plain text.
             </p>
 
+            <p class="card-hint">
+              Don't have a key yet? <a href="#" id="link-provider-guide">See where to get free AI access</a>.
+            </p>
+
             <label class="field">
               <span class="field-label">Base URL</span>
               <input type="text" id="set-base-url" spellcheck="false"
                      placeholder="https://api.openai.com/v1" />
               <span class="field-hint">
                 Ollama: <code>http://localhost:11434/v1</code> ·
-                LM Studio: <code>http://localhost:1234/v1</code> ·
-                OpenRouter: <code>https://openrouter.ai/api/v1</code>
+                LM Studio: <code>http://localhost:1234/v1</code>
               </span>
             </label>
 
@@ -242,7 +245,6 @@
               <span class="key-row">
                 <input type="password" id="set-api-key" spellcheck="false"
                        placeholder="sk-…" autocomplete="off" />
-                <button class="btn btn-sm" id="btn-key-reveal" type="button">Show</button>
                 <button class="btn btn-sm" id="btn-key-clear" type="button">Remove</button>
               </span>
               <span class="field-hint" id="key-status">No key stored.</span>
@@ -356,32 +358,14 @@
               <span class="field-hint">Uses the file's creation time, not today's date.</span>
             </div>
 
-            <div class="field">
+            <label class="field">
               <span class="field-label">Maximum words</span>
-              <div class="csel">
-                <input type="checkbox" class="csel-toggle" id="csel-toggle-max-words" />
-                <label class="csel-trigger" for="csel-toggle-max-words">
-                  <span class="csel-value"></span>
-                  <svg class="csel-arrow" viewBox="0 -960 960 960" aria-hidden="true">
-                    <path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z" />
-                  </svg>
-                </label>
-                <div class="csel-panel"></div>
-                <select id="set-max-words" class="csel-native">
-                  <option value="2">2 words</option>
-                  <option value="3">3 words</option>
-                  <option value="4">4 words</option>
-                  <option value="5">5 words</option>
-                  <option value="6">6 words</option>
-                  <option value="7">7 words</option>
-                  <option value="8">8 words</option>
-                  <option value="9">9 words</option>
-                  <option value="10">10 words</option>
-                  <option value="11">11 words</option>
-                  <option value="12">12 words</option>
-                </select>
+              <div class="field-suffix">
+                <input type="text" id="set-max-words" inputmode="numeric" pattern="[0-9]*" maxlength="2"
+                  spellcheck="false" />
+                <span>words</span>
               </div>
-            </div>
+            </label>
 
             <label class="field">
               <span class="field-label">Description language</span>

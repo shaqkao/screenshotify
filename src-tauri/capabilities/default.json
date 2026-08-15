@@ -20,6 +20,7 @@
     "store:default",
     "autostart:default",
     "opener:allow-open-url",
+    "opener:allow-default-urls",
     "opener:allow-reveal-item-in-dir",
     "updater:default",
     "process:allow-restart"

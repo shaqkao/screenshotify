@@ -23,6 +23,7 @@ import { initReview, applyAll, skipAll, refreshChrome, formatFileInfo, openLight
 import { toast } from "./toast.js";
 
 const REPO_URL = "https://github.com/shaqkao/screenshotify";
+const PROVIDER_GUIDE_URL = "https://github.com/shaqkao/screenshotify/blob/master/provider.md";
 /** Above this many files, a folder scan asks for confirmation first. */
 const BULK_CONFIRM_AT = 50;
 /** Mirrors files::IMAGE_EXTS on the Rust side; only used for the file-picker filter. */
@@ -756,10 +757,12 @@ async function initSettingsForm() {
   bindText("set-base-url", "baseUrl");
   bindText("set-model", "model");
 
-  $("set-api-key").value = "";
+  const keyInput = $("set-api-key");
+
+  keyInput.value = "";
   await renderKeyStatus();
 
-  $("set-api-key").addEventListener("change", async (ev) => {
+  keyInput.addEventListener("change", async (ev) => {
     const value = ev.target.value.trim();
     if (!value) return;
     try {
@@ -772,17 +775,10 @@ async function initSettingsForm() {
     }
   });
 
-  $("btn-key-reveal").addEventListener("click", () => {
-    const input = $("set-api-key");
-    const showing = input.type === "text";
-    input.type = showing ? "password" : "text";
-    $("btn-key-reveal").textContent = showing ? "Show" : "Hide";
-  });
-
   $("btn-key-clear").addEventListener("click", async () => {
     try {
       await clearApiKey();
-      $("set-api-key").value = "";
+      keyInput.value = "";
       await renderKeyStatus();
       toast("API key removed.", { kind: "ok" });
     } catch (err) {
@@ -812,8 +808,7 @@ async function initSettingsForm() {
   bindSelect("set-date-prefix", "datePrefix", () => queue.restyleAll());
   enhanceSelect($("set-case-style"));
   enhanceSelect($("set-date-prefix"));
-  bindSelectNumber("set-max-words", "maxWords", () => queue.restyleAll());
-  enhanceSelect($("set-max-words"));
+  bindNumberInput("set-max-words", "maxWords", { min: 1, max: 20 }, () => queue.restyleAll());
   bindText("set-language", "language");
   bindText("set-prompt-extra", "promptExtra");
 
@@ -853,6 +848,10 @@ async function initSettingsForm() {
   $("link-repo").addEventListener("click", (ev) => {
     ev.preventDefault();
     openUrl(REPO_URL);
+  });
+  $("link-provider-guide").addEventListener("click", (ev) => {
+    ev.preventDefault();
+    openUrl(PROVIDER_GUIDE_URL);
   });
 
   await invoke("set_close_to_tray", { enabled: !!s.closeToTray }).catch(() => {});
@@ -934,18 +933,6 @@ function bindCheck(id, key, after) {
     await updateSettings({ [key]: el.checked });
     if (after) await after();
     renderWatchPill();
-  });
-}
-
-// Like bindSelect, but for <select>s standing in for a numeric setting
-// (maxWords/maxEdge), so the stored value stays a Number rather than the
-// string a <select> naturally produces.
-function bindSelectNumber(id, key, after) {
-  const el = $(id);
-  el.value = String(getSettings()[key]);
-  el.addEventListener("change", async () => {
-    await updateSettings({ [key]: Number(el.value) });
-    if (after) after();
   });
 }
 

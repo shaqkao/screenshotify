@@ -15,6 +15,7 @@ URL** and **API key**, type the **Model**, then click **Test connection**.
 > You may see this "Looks like something went wrong!" when signing up, reload the page and it should be fine.
 
 <p align="center"><img src="https://i.postimg.cc/hj4gn0wB/image.png" alt="image.png"></p>
+
 2. Open **API Keys** in the left sidebar → **Create new key**. Copy it
    immediately; Mistral only shows it once.
 <table align="center">
@@ -27,12 +28,14 @@ URL** and **API key**, type the **Model**, then click **Test connection**.
 <td><img src="https://i.postimg.cc/P5h8DgvV/image.png" width="400" alt="image.png"></td>
 </tr>
 </table>
+
 3. In Screenshotify Settings:
    - **Base URL:** `https://api.mistral.ai/v1`
    - **Model:** `mistral-medium-latest` (recommended)
    - **API key:** the key from step 2
    - Press `test connection` to test
 <p align="center"><img src="https://i.postimg.cc/3Jkt6DL5/image.png" alt="image.png"></p>
+
 ### Limit
 - 25000 tokens per minute, 50 requests per minute
 > Free quota may change in the future, check the latest limits at [admin.mistral.ai](https://admin.mistral.ai/plateforme/limits)
@@ -51,9 +54,11 @@ URL** and **API key**, type the **Model**, then click **Test connection**.
    - **Model:** `google/diffusiongemma-26b-a4b-it`
    - **API key:** the key from step 3
 <p align="center"><img src="https://i.postimg.cc/L4xPc95k/image.png" alt="image.png"></p>
+
 ### Limit
 - 40 requests per minute
 > Free quota may change in the future, check the latest limits at their official website.
+
 ## Notes
 
 - Both of these are moving targets: providers change free tier terms,

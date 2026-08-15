@@ -12,7 +12,7 @@ Nothing is renamed until you say so.
 
 ### [<img src="https://i.postimg.cc/7ZmVrVZR/windows.png" width="20" valign="middle" alt=""> Download for Windows](https://github.com/shaqkao/screenshotify/releases/latest)
 
-Free · open source · MIT · bring your own API key
+Free · open source · MIT · [bring your own API key](provider.md)
 
 </div>
 

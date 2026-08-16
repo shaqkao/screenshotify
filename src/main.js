@@ -35,6 +35,10 @@ let notifyTimer = null;
 let pendingNotifyNames = [];
 const notifiedIds = new Set();
 
+// WebView2's default context menu (Back, Reload, Save As, Print, Inspect…)
+// is browser chrome that has no place in a packaged app.
+document.addEventListener("contextmenu", (e) => e.preventDefault());
+
 /* ══════════════════════════ Bootstrap ══════════════════════════ */
 
 async function main() {

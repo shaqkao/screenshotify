@@ -29,6 +29,14 @@ fn show_main(app: &AppHandle) {
         let _ = win.set_skip_taskbar(false);
         let _ = win.show();
         let _ = win.unminimize();
+        // Windows' foreground-lock heuristic silently drops set_focus() when
+        // the request comes from a background process — which this one is,
+        // from the OS's point of view, whenever it's reacting to a second
+        // launch (single-instance) or a toast click rather than a click the
+        // user just made on this window itself. Toggling always-on-top forces
+        // the window to the front of the z-order regardless of that lock.
+        let _ = win.set_always_on_top(true);
+        let _ = win.set_always_on_top(false);
         let _ = win.set_focus();
     }
 }

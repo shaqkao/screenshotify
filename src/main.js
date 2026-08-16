@@ -44,6 +44,7 @@ async function main() {
 
   initReview();
   applyListColumns();
+  initTitlebar();
   initSidebarToggle();
   initTabs();
   initReviewToolbar();
@@ -85,6 +86,32 @@ async function showWindowIfWanted() {
   } catch (err) {
     console.error("could not show the window", err);
   }
+}
+
+/* ══════════════════════════ Titlebar ══════════════════════════ */
+
+/**
+ * Custom titlebar controls, needed because decorations:false in
+ * tauri.conf.json hands us the whole window frame (the dragging itself is
+ * handled declaratively by the data-tauri-drag-region attribute in
+ * index.html — this just wires the three buttons).
+ */
+function initTitlebar() {
+  const win = getCurrentWindow();
+  const maximizeBtn = $("titlebar-maximize");
+
+  const syncMaximized = async () => {
+    const maximized = await win.isMaximized();
+    maximizeBtn.title = maximized ? "Restore Down" : "Maximize";
+    maximizeBtn.setAttribute("aria-label", maximizeBtn.title);
+  };
+
+  $("titlebar-minimize").addEventListener("click", () => win.minimize());
+  maximizeBtn.addEventListener("click", () => win.toggleMaximize());
+  $("titlebar-close").addEventListener("click", () => win.close());
+
+  win.onResized(syncMaximized);
+  syncMaximized();
 }
 
 /* ══════════════════════════ Sidebar ══════════════════════════ */

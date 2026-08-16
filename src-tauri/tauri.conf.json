@@ -22,7 +22,8 @@
         "center": true,
         "resizable": true,
         "visible": false,
-        "skipTaskbar": true
+        "skipTaskbar": true,
+        "decorations": false
       }
     ],
     "security": {

@@ -59,10 +59,91 @@ body {
   font-size: 14px;
   line-height: 1.5;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   user-select: none;
+}
+
+/* ─────────────────────────────── Titlebar ─────────────────────────────── */
+/* decorations:false in tauri.conf.json hands the whole window frame to us —
+   drawn here instead so it always matches the app's own theme rather than
+   the OS titlebar, which otherwise follows the system light/dark setting
+   independently of the app (the mismatch users were reporting). Fixed
+   colors regardless of theme, same reasoning as --sidebar-bg. */
+.titlebar {
+  flex: 0 0 auto;
+  height: 32px;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  background: var(--sidebar-bg);
+  border-bottom: 1px solid #454545;
+  -webkit-app-region: drag;
+}
+
+.titlebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  min-width: 0;
+  color: #f2f2f2;
+}
+
+.titlebar-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.titlebar-title {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.titlebar-controls {
+  display: flex;
+  flex: 0 0 auto;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #f2f2f2;
+  cursor: pointer;
+}
+
+.titlebar-btn svg {
+  width: 14px;
+  height: 14px;
+  /* Same fixed accent as the sidebar's glyph (see styles.css comment near
+     color: #ffdaab), kept as a literal rather than currentColor so it reads
+     the same regardless of theme. */
+  fill: #ffdaab;
+}
+
+.titlebar-btn:hover { background: rgba(255, 255, 255, 0.12); }
+.titlebar-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+.titlebar-btn-close:hover { background: #e81123; }
+.titlebar-btn-close:active { background: #c50f1f; }
+
+.app-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
 }
 
 code {

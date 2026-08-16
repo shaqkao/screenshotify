@@ -1243,9 +1243,34 @@ async function checkForUpdates({ silent }) {
       action: {
         label: "Install and restart",
         onClick: async () => {
+          let total = 0;
+          let downloaded = 0;
           try {
             setStatus("Downloading…");
-            await update.downloadAndInstall();
+            await update.downloadAndInstall((event) => {
+              switch (event.event) {
+                case "Started":
+                  total = event.data.contentLength || 0;
+                  downloaded = 0;
+                  break;
+                case "Progress":
+                  downloaded += event.data.chunkLength;
+                  setStatus(
+                    total
+                      ? `Downloading… ${Math.min(100, Math.round((downloaded / total) * 100))}%`
+                      : "Downloading…",
+                  );
+                  break;
+                case "Finished":
+                  // download_and_install runs the installer itself before its
+                  // promise resolves — this is the only signal we get that
+                  // the download half is done and the silent install (plus
+                  // whatever the OS does to an unsigned exe, e.g. a Defender
+                  // reputation check) is what's actually still running.
+                  setStatus("Installing…");
+                  break;
+              }
+            });
             const { relaunch } = await import("@tauri-apps/plugin-process");
             await relaunch();
           } catch (err) {

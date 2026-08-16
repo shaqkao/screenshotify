@@ -1,7 +1,7 @@
 {
   "name": "screenshotify",
-  "version": "0.1.5",
-  "description": "Open-source Windows tray app that watches your screenshot folder and uses AI to suggest meaningful filenames.",
+  "version": "0.1.0",
+  "description": "Open-source Windows tray app that automatically turns screenshots into meaningful filenames with AI.",
   "license": "MIT",
   "private": true,
   "type": "module",

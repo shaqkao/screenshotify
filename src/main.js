@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getCurrentWindow, currentMonitor } from "@tauri-apps/api/window";
 import { getVersion } from "@tauri-apps/api/app";
 import { ask, open as openDialog } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -100,18 +100,57 @@ async function showWindowIfWanted() {
  * handled declaratively by the data-tauri-drag-region attribute in
  * index.html — this just wires the three buttons).
  */
+const MAXIMIZE_PATH =
+  "M86-86v-260h126v134h134v126H86Zm529 0v-126h133v-134h126v260H615ZM86-615v-259h260v126H212v133H86Zm662 0v-133H615v-126h259v259H748Z";
+const RESTORE_PATH =
+  "M220-86v-134H86v-126h260v260H220Zm395 0v-260h259v126H741v134H615ZM86-615v-126h134v-133h126v259H86Zm529 0v-259h126v133h133v126H615Z";
+
 function initTitlebar() {
   const win = getCurrentWindow();
   const maximizeBtn = $("titlebar-maximize");
+  const maximizeIconPath = document.querySelector("#titlebar-maximize-icon path");
+
+  // win.isMaximized() reads the OS-level "maximized" window style, which on
+  // Windows doesn't reliably get set for a decorations:false window — never
+  // once reported true here despite the window visibly filling the screen.
+  // Comparing the window's actual outer size against its monitor sidesteps
+  // that flag entirely. The two don't land on an exact match even while
+  // genuinely maximized (measured ~1936x1048 outer size on a 1920x1080
+  // screen — Windows' usual sizing slop for a borderless resizable window),
+  // hence the tolerance rather than requiring one.
+  const FILL_TOLERANCE = 60;
+  const isFilling = async () => {
+    const monitor = await currentMonitor();
+    if (!monitor) return false;
+    const size = await win.outerSize();
+    return (
+      Math.abs(size.width - monitor.size.width) <= FILL_TOLERANCE &&
+      Math.abs(size.height - monitor.size.height) <= FILL_TOLERANCE
+    );
+  };
 
   const syncMaximized = async () => {
-    const maximized = await win.isMaximized();
+    const maximized = await isFilling();
+    // Swap the path data on one icon rather than toggling `hidden` between
+    // two — the latter visibly failed to repaint here despite the DOM state
+    // itself being correct (confirmed via logging), a WebView2 quirk with
+    // display toggling on flex-item SVGs. Changing what's actually painted
+    // sidesteps that entirely.
+    maximizeIconPath.setAttribute("d", maximized ? RESTORE_PATH : MAXIMIZE_PATH);
     maximizeBtn.title = maximized ? "Restore Down" : "Maximize";
     maximizeBtn.setAttribute("aria-label", maximizeBtn.title);
   };
 
   $("titlebar-minimize").addEventListener("click", () => win.minimize());
-  maximizeBtn.addEventListener("click", () => win.toggleMaximize());
+  maximizeBtn.addEventListener("click", async () => {
+    // Don't rely solely on onResized below: it fires off the OS resize
+    // event, which on Windows can arrive a tick before isMaximized() itself
+    // reports the new state, so a check made only there can read stale.
+    // toggleMaximize()'s own promise, by contrast, only resolves after the
+    // platform call it wraps has already happened.
+    await win.toggleMaximize();
+    syncMaximized();
+  });
   $("titlebar-close").addEventListener("click", () => win.close());
 
   win.onResized(syncMaximized);

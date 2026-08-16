@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="app-icon.png" width="104" alt="Screenshotify">
+<img src="assets/app-icon.png" width="104" alt="Screenshotify">
 
 # Screenshotify
 
@@ -20,11 +20,11 @@ Free · open source · MIT · [bring your own API key](provider.md)
 
 <div align="center">
 
-<img src="intro1.png" width="70%" alt="Screenshotify screenshot 1">
+<img src="assets/intro1.png" width="70%" alt="Screenshotify screenshot 1">
 
-<img src="intro2.png" width="70%" alt="Screenshotify screenshot 2">
+<img src="assets/intro2.png" width="70%" alt="Screenshotify screenshot 2">
 
-<img src="intro3.png" width="70%" alt="Screenshotify screenshot 3">
+<img src="assets/intro3.png" width="70%" alt="Screenshotify screenshot 3">
 
 </div>
 

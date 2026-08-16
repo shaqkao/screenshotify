@@ -9,7 +9,7 @@
   <body>
     <div class="titlebar" data-tauri-drag-region>
       <div class="titlebar-brand" data-tauri-drag-region>
-        <img class="titlebar-icon" src="./icon.png" alt="" aria-hidden="true" />
+        <img class="titlebar-icon" src="./assets/icon.png" alt="" aria-hidden="true" />
         <span class="titlebar-title">Screenshotify</span>
       </div>
       <div class="titlebar-controls">
@@ -33,7 +33,7 @@
     <aside class="sidebar">
       <div class="brand">
         <button class="brand-badge" id="sidebar-toggle" type="button" title="Collapse sidebar">
-          <img class="brand-mark" src="./icon.png" alt="" aria-hidden="true" />
+          <img class="brand-mark" src="./assets/icon.png" alt="" aria-hidden="true" />
           <svg class="brand-toggle-icon brand-toggle-close" viewBox="0 -960 960 960" aria-hidden="true">
             <path d="M648-324v-312L480-480l168 156ZM211-144q-27.64 0-47.32-19.68T144-211v-538q0-27.64 19.68-47.32T211-816h538q27.64 0 47.32 19.68T816-749v538q0 27.64-19.68 47.32T749-144H211Zm197-72h336v-528H408v528Z" />
           </svg>
@@ -44,7 +44,7 @@
         <span class="brand-text">
           <span class="brand-name">
             <span class="brand-name-text">Screenshotify</span>
-            <img class="brand-alpha-badge" src="./alpha-badge.png" alt="" aria-hidden="true" />
+            <img class="brand-alpha-badge" src="./assets/alpha-badge.png" alt="" aria-hidden="true" />
           </span>
         </span>
       </div>
@@ -96,6 +96,13 @@
           <span class="tab-label">Settings</span>
         </button>
       </nav>
+
+      <button class="sidebar-collapse-btn" id="sidebar-collapse-toggle" type="button">
+        <svg class="sidebar-collapse-icon" id="sidebar-collapse-icon" viewBox="0 -960 960 960" aria-hidden="true">
+          <path d="M648-324v-312L480-480l168 156ZM211-144q-27.64 0-47.32-19.68T144-211v-538q0-27.64 19.68-47.32T211-816h538q27.64 0 47.32 19.68T816-749v538q0 27.64-19.68 47.32T749-144H211Zm197-72h336v-528H408v528Z" />
+        </svg>
+        <span class="tab-label" id="sidebar-collapse-label">Collapse sidebar</span>
+      </button>
 
       <div class="sidebar-spacer"></div>
 

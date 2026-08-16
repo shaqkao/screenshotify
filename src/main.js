@@ -162,20 +162,33 @@ function initTitlebar() {
 function initSidebarToggle() {
   const sidebar = document.querySelector(".sidebar");
   const toggle = $("sidebar-toggle");
+  // A second, always-visible control for the exact same action — the badge
+  // above only hints at it on hover, easy to miss.
+  const menuToggle = $("sidebar-collapse-toggle");
+  const menuIcon = $("sidebar-collapse-icon");
+  const menuLabel = $("sidebar-collapse-label");
 
   const apply = (collapsed) => {
     sidebar.classList.toggle("is-collapsed", collapsed);
-    toggle.title = collapsed ? "Expand sidebar" : "Collapse sidebar";
+    const title = collapsed ? "Expand sidebar" : "Collapse sidebar";
+    toggle.title = title;
     toggle.setAttribute("aria-expanded", String(!collapsed));
+    menuIcon.classList.toggle("is-mirrored", collapsed);
+    menuLabel.textContent = title;
+    menuToggle.title = title;
+    menuToggle.setAttribute("aria-expanded", String(!collapsed));
   };
 
   apply(!!getSettings().sidebarCollapsed);
 
-  toggle.addEventListener("click", async () => {
+  const toggleCollapsed = async () => {
     const collapsed = !sidebar.classList.contains("is-collapsed");
     apply(collapsed);
     await updateSettings({ sidebarCollapsed: collapsed });
-  });
+  };
+
+  toggle.addEventListener("click", toggleCollapsed);
+  menuToggle.addEventListener("click", toggleCollapsed);
 }
 
 /* ══════════════════════════ Tabs ══════════════════════════ */

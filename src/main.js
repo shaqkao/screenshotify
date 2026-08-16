@@ -94,17 +94,17 @@ async function showWindowIfWanted() {
 
 /* ══════════════════════════ Titlebar ══════════════════════════ */
 
+const MAXIMIZE_PATH =
+  "M86-86v-260h126v134h134v126H86Zm529 0v-126h133v-134h126v260H615ZM86-615v-259h260v126H212v133H86Zm662 0v-133H615v-126h259v259H748Z";
+const RESTORE_PATH =
+  "M220-86v-134H86v-126h260v260H220Zm395 0v-260h259v126H741v134H615ZM86-615v-126h134v-133h126v259H86Zm529 0v-259h126v133h133v126H615Z";
+
 /**
  * Custom titlebar controls, needed because decorations:false in
  * tauri.conf.json hands us the whole window frame (the dragging itself is
  * handled declaratively by the data-tauri-drag-region attribute in
  * index.html — this just wires the three buttons).
  */
-const MAXIMIZE_PATH =
-  "M86-86v-260h126v134h134v126H86Zm529 0v-126h133v-134h126v260H615ZM86-615v-259h260v126H212v133H86Zm662 0v-133H615v-126h259v259H748Z";
-const RESTORE_PATH =
-  "M220-86v-134H86v-126h260v260H220Zm395 0v-260h259v126H741v134H615ZM86-615v-126h134v-133h126v259H86Zm529 0v-259h126v133h133v126H615Z";
-
 function initTitlebar() {
   const win = getCurrentWindow();
   const maximizeBtn = $("titlebar-maximize");
@@ -144,10 +144,10 @@ function initTitlebar() {
   $("titlebar-minimize").addEventListener("click", () => win.minimize());
   maximizeBtn.addEventListener("click", async () => {
     // Don't rely solely on onResized below: it fires off the OS resize
-    // event, which on Windows can arrive a tick before isMaximized() itself
-    // reports the new state, so a check made only there can read stale.
-    // toggleMaximize()'s own promise, by contrast, only resolves after the
-    // platform call it wraps has already happened.
+    // event, which can arrive before the window's new outer size is
+    // queryable, so a check made only there can read stale. toggleMaximize()'s
+    // own promise, by contrast, only resolves after the platform call it
+    // wraps has already happened.
     await win.toggleMaximize();
     syncMaximized();
   });

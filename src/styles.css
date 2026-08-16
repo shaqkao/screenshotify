@@ -1128,8 +1128,19 @@ main {
    @container conditions can't reference a custom property's value (the
    condition is evaluated before it), and "Photos per row" only ever offers
    1–3 (main.js: applyListColumns / review.js: setColumns) — three fixed
-   breakpoints is simpler and more robust than trying to compute one. */
-@container (max-width: 799px) {
+   breakpoints is simpler and more robust than trying to compute one.
+
+   The breakpoint itself needs real margin above the flex-wrap boundary
+   (N × 260px + (N-1) × 10px), not just 1px under it: a container width can
+   sit on the wrap side of that boundary (basis < 260px, so the row/hrow
+   flow wraps to fewer columns) while still reading as wider than a
+   1px-under @container threshold, since the two are computed by different
+   parts of the layout engine and don't round the same way. That left a
+   narrow live width range where the flex-wrap fallback (fewer, wider
+   columns) had already kicked in before this stacked-card rule did —
+   visible as columns dropping from 3 to 2 and then back to 3 while
+   shrinking the window through that range. */
+@container (max-width: 820px) {
   .list[data-cols="3"].is-grid .row,
   .list[data-cols="3"].is-grid .hrow {
     min-width: 140px;
@@ -1160,7 +1171,7 @@ main {
   }
 }
 
-@container (max-width: 529px) {
+@container (max-width: 550px) {
   .list[data-cols="2"].is-grid .row,
   .list[data-cols="2"].is-grid .hrow {
     min-width: 140px;

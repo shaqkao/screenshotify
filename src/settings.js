@@ -3,8 +3,9 @@ import { invoke } from "@tauri-apps/api/core";
 
 /**
  * Settings live in a JSON store next to the app data; the API key is the one
- * thing that never touches it — that goes to the Windows Credential Manager
- * through the Rust side and is never sent back to the frontend.
+ * thing that never touches it — that goes to the platform's own credential
+ * store (Windows Credential Manager, macOS Keychain) through the Rust side and
+ * is never sent back to the frontend.
  */
 
 export const DEFAULTS = {
@@ -40,8 +41,8 @@ export async function initSettings() {
   const saved = (await store.get(KEY)) || {};
   cache = { ...DEFAULTS, ...saved };
 
-  // A fresh install with no folder configured is useless, so seed the
-  // standard Windows screenshot location when it exists.
+  // A fresh install with no folder configured is useless, so seed whatever the
+  // platform's own screenshot location turns out to be, when it exists.
   if (!saved.watchFolders) {
     const guessed = await invoke("default_screenshot_folders").catch(() => []);
     if (guessed.length) {
@@ -81,7 +82,7 @@ export async function updateSettings(patch) {
   return cache;
 }
 
-/* ── API key (Windows Credential Manager, via Rust) ───────────────────── */
+/* ── API key (the OS credential store, via Rust) ──────────────────────── */
 
 export async function saveApiKey(key) {
   await invoke("set_api_key", { key });

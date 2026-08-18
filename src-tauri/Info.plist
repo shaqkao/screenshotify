@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Merged into the generated Info.plist by the macOS bundler. Only the keys
+  Tauri does not already derive from tauri.conf.json belong here.
+
+  The usage descriptions are what macOS shows in the permission prompt the
+  first time the watcher touches one of these folders. Without them the prompt
+  has no explanation in it, and TCC denies the read outright on recent
+  releases — which would look exactly like the watcher silently not working.
+-->
+<plist version="1.0">
+  <dict>
+    <key>NSDesktopFolderUsageDescription</key>
+    <string>Screenshotify watches your screenshot folder — the Desktop, unless you have moved it — so it can suggest a filename for each new screenshot.</string>
+
+    <key>NSDocumentsFolderUsageDescription</key>
+    <string>Screenshotify only reads the screenshot folders you add yourself, and only renames a file once you approve the suggested name.</string>
+
+    <key>NSDownloadsFolderUsageDescription</key>
+    <string>Screenshotify only reads the screenshot folders you add yourself, and only renames a file once you approve the suggested name.</string>
+
+    <key>NSRemovableVolumesUsageDescription</key>
+    <string>Needed only if you point Screenshotify at a screenshot folder on an external disk.</string>
+  </dict>
+</plist>

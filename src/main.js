@@ -16,6 +16,7 @@ import {
   clearApiKey,
   hasApiKey,
 } from "./settings.js";
+import { initPlatform, platform, isMac } from "./platform.js";
 import { initStats, getModelUsage, onStatsChange, resetStats } from "./stats.js";
 import * as queue from "./queue.js";
 import * as history from "./history.js";
@@ -35,19 +36,27 @@ let notifyTimer = null;
 let pendingNotifyNames = [];
 const notifiedIds = new Set();
 
-// WebView2's default context menu (Back, Reload, Save As, Print, Inspect…)
-// is browser chrome that has no place in a packaged app.
-document.addEventListener("contextmenu", (e) => e.preventDefault());
+// The webview's default context menu (Back, Reload, Save As, Print, Inspect…)
+// is browser chrome that has no place in a packaged app. Text fields keep
+// theirs: on macOS that menu is the only pointer-driven way to paste, and
+// pasting an API key is the single most common thing anyone does here.
+document.addEventListener("contextmenu", (e) => {
+  if (e.target.closest("input, textarea")) return;
+  e.preventDefault();
+});
 
 /* ══════════════════════════ Bootstrap ══════════════════════════ */
 
 async function main() {
+  // First: everything below words itself according to what this returns.
+  await initPlatform();
   await initSettings();
   await initStats();
   await history.initHistory();
 
   initReview();
   applyListColumns();
+  applyPlatformCopy();
   initTitlebar();
   initSidebarToggle();
   initTabs();
@@ -76,20 +85,46 @@ async function main() {
  * Whether it should actually appear is decided here, once settings are loaded.
  */
 async function showWindowIfWanted() {
-  const win = getCurrentWindow();
+  let stayHidden = false;
   try {
     const fromStartup = await invoke("launched_minimized");
-    if (fromStartup || getSettings().startMinimized) return;
+    stayHidden = fromStartup || getSettings().startMinimized;
   } catch (err) {
     console.error("could not read the launch mode", err);
   }
+
+  if (stayHidden) {
+    // Nothing is going to appear on screen, so on macOS drop out of the Dock
+    // as well — a launch that leaves a bouncing Dock icon and no window is
+    // exactly the thing "start minimised" is supposed to avoid.
+    await invoke("set_dock_icon", { visible: false }).catch(() => {});
+    return;
+  }
+
+  // Showing goes through Rust rather than window.show() so the Dock icon,
+  // focus and taskbar handling stay in one place (show_main in lib.rs).
   try {
-    await win.setSkipTaskbar(false);
-    await win.show();
-    await win.setFocus();
+    await invoke("show_main_window");
   } catch (err) {
     console.error("could not show the window", err);
   }
+}
+
+/**
+ * Rewrites the labels that name something only one platform has: a credential
+ * store, a tray, a login. Done here rather than in index.html so the markup
+ * carries no platform assumption at all.
+ */
+function applyPlatformCopy() {
+  const { keyStore, trayName, loginPhrase } = platform();
+  const set = (id, text) => {
+    const el = $(id);
+    if (el) el.textContent = text;
+  };
+  set("copy-key-store", keyStore);
+  set("copy-autostart", `Start Screenshotify when I ${loginPhrase}`);
+  set("copy-start-minimized", `Start hidden in the ${trayName}`);
+  set("copy-close-to-tray", `Closing the window hides it to the ${trayName} instead of quitting`);
 }
 
 /* ══════════════════════════ Titlebar ══════════════════════════ */
@@ -106,6 +141,13 @@ const RESTORE_PATH =
  * index.html — this just wires the three buttons).
  */
 function initTitlebar() {
+  // macOS draws its own controls over the top-left of the window
+  // (titleBarStyle: "Overlay" in tauri.macos.conf.json), so the bar stays as a
+  // drag region and a place for the app name, while the three buttons below —
+  // which would be both duplicated and on the wrong side — are taken out by
+  // styles.css, along with reserving the space the real ones sit in.
+  if (isMac()) return;
+
   const win = getCurrentWindow();
   const maximizeBtn = $("titlebar-maximize");
   const maximizeIconPath = document.querySelector("#titlebar-maximize-icon path");
@@ -864,7 +906,7 @@ async function initSettingsForm() {
       await saveApiKey(value);
       ev.target.value = "";
       await renderKeyStatus();
-      toast("API key saved to Windows Credential Manager.", { kind: "ok" });
+      toast(`API key saved to the ${platform().keyStore}.`, { kind: "ok" });
     } catch (err) {
       toast(`Could not save the key: ${err}`, { kind: "err" });
     }
@@ -1053,7 +1095,7 @@ async function renderKeyStatus() {
   const stored = await hasApiKey().catch(() => false);
   const el = $("key-status");
   el.textContent = stored
-    ? "A key is stored in the Windows Credential Manager. Type a new one to replace it."
+    ? `A key is stored in the ${platform().keyStore}. Type a new one to replace it.`
     : "No key stored. Local endpoints such as Ollama usually do not need one.";
 }
 

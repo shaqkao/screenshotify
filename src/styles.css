@@ -138,6 +138,31 @@ body {
 .titlebar-btn-close:hover { background: #e81123; }
 .titlebar-btn-close:active { background: #c50f1f; }
 
+/* macOS keeps its own window controls: titleBarStyle "Overlay" floats the
+   traffic lights over the top-left of the webview instead of giving them a
+   frame of their own, so the bar above survives as a drag region and an app
+   name — it just has to get out of their way, and stop drawing a second set of
+   buttons on the wrong side.
+
+   28px is the height macOS lays a standard title bar out at, so matching it
+   exactly is what leaves the traffic lights vertically centred in our bar
+   rather than floating near its top; 78px clears the three of them plus the
+   inset they start at. Both numbers are the OS's, not ours, which is why they
+   are literals here. */
+:root[data-os="macos"] .titlebar {
+  height: 28px;
+}
+
+:root[data-os="macos"] .titlebar-brand {
+  padding-left: 78px;
+}
+
+/* Not `hidden` from JS: .titlebar-controls sets display:flex, which an author
+   rule has to undo — the UA's [hidden] rule loses to it. */
+:root[data-os="macos"] .titlebar-controls {
+  display: none;
+}
+
 .app-shell {
   flex: 1 1 auto;
   min-height: 0;

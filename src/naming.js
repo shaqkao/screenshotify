@@ -1,10 +1,16 @@
 /**
- * Turns whatever the model replied with into a safe Windows filename stem.
+ * Turns whatever the model replied with into a safe filename stem.
  * Models are chatty and inconsistent, so this stage is deliberately strict:
  * everything the user sees in the review list has already been through it.
+ *
+ * The rules below are the union of every platform's, not just the running
+ * one's: macOS accepts a name with a backslash or a question mark in it quite
+ * happily, and then that screenshot is unusable the moment it is sent to
+ * someone on Windows. Screenshots get shared, so the strictest rule wins.
  */
 
-// Characters Windows refuses in a filename.
+// Characters Windows refuses in a filename. "/" and ":" are the two macOS
+// rejects as well, so this set covers both.
 const ILLEGAL = /[<>:"/\\|?*]/g;
 // Control characters (\p{Cc}) are equally illegal and invisible in the UI.
 const CONTROL = /\p{Cc}/gu;
@@ -180,6 +186,11 @@ export function sanitizeUserStem(input) {
   let s = String(input || "")
     .replace(CONTROL, "")
     .replace(ILLEGAL, "")
+    .trim()
+    // A leading dot makes the file invisible in Finder and in `ls` — never
+    // what someone renaming a screenshot meant, and hard to recover from
+    // once the file has vanished from the folder they were looking at.
+    .replace(/^\.+/, "")
     .trim()
     .replace(/[. ]+$/, "");
   if (s.length > MAX_STEM * 2) s = s.slice(0, MAX_STEM * 2);

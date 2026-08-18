@@ -253,7 +253,8 @@
             <p class="card-hint">
               Any OpenAI-compatible endpoint that accepts image input: OpenAI,
               OpenRouter, Ollama, LM Studio, vLLM, and others. Your key is stored
-              in the Windows Credential Manager, never in plain text.
+              in the <span id="copy-key-store">Windows Credential Manager</span>, never in
+              plain text.
             </p>
 
             <p class="card-hint">
@@ -453,19 +454,19 @@
             <label class="check">
               <input type="checkbox" id="set-autostart" />
               <div class="checkmark"></div>
-              <span>Start Screenshotify when I sign in to Windows</span>
+              <span id="copy-autostart">Start Screenshotify when I sign in to Windows</span>
             </label>
 
             <label class="check">
               <input type="checkbox" id="set-start-minimized" />
               <div class="checkmark"></div>
-              <span>Start minimised to the system tray</span>
+              <span id="copy-start-minimized">Start hidden in the system tray</span>
             </label>
 
             <label class="check">
               <input type="checkbox" id="set-close-to-tray" />
               <div class="checkmark"></div>
-              <span>Closing the window hides it to the tray instead of quitting</span>
+              <span id="copy-close-to-tray">Closing the window hides it to the tray instead of quitting</span>
             </label>
 
             <label class="field">

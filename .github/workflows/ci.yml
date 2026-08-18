@@ -1,0 +1,47 @@
+name: CI
+
+# Screenshotify's platform-specific code is #[cfg]-gated, which means half of it
+# is invisible to a compiler running on the other platform. Both have to be
+# built for a change to be known to work.
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: ${{ matrix.platform }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Frontend unit tests
+        run: npm test
+
+      - name: Frontend build
+        run: npm run build
+
+      # Compiles the whole backend for this platform, including the parts the
+      # other one never sees, and runs whatever tests are gated to it.
+      - name: Backend tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml

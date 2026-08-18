@@ -103,10 +103,12 @@ test("date prefix modes produce the documented shapes", () => {
   assert.equal(datePrefix("none", CREATED), "");
 });
 
-test("never produces a name Windows would reject", () => {
+test("never produces a name any platform would reject", () => {
   const stem = buildStem({ raw: 'C:\\Users\\report <final>? "v2"' });
   assert.doesNotMatch(stem, /[<>:"/\\|?*]/);
   assert.doesNotMatch(stem, /[. ]$/);
+  // A leading dot would make the renamed screenshot invisible on macOS.
+  assert.doesNotMatch(stem, /^\./);
 });
 
 test("escapes reserved device names", () => {
@@ -134,6 +136,13 @@ test("keeps spaces and hyphens the user typed", () => {
 test("removes illegal characters without mangling the rest", () => {
   assert.equal(sanitizeUserStem('report: q3/q4?'), "report q3q4");
   assert.equal(sanitizeUserStem("trailing dots..."), "trailing dots");
+});
+
+test("never leaves a leading dot, which would hide the file on macOS", () => {
+  assert.equal(sanitizeUserStem(".hidden report"), "hidden report");
+  assert.equal(sanitizeUserStem("..DS_Store"), "DS_Store");
+  // Dots in the middle are a normal thing to want.
+  assert.equal(sanitizeUserStem("v1.2 draft"), "v1.2 draft");
 });
 
 test("escapes reserved device names typed by hand", () => {

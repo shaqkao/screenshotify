@@ -276,7 +276,9 @@ async function apply(id, batch) {
 
   const stem = sanitizeUserStem(item.suggestion);
   if (!stem) {
-    toast("That name is empty after removing characters Windows does not allow.", { kind: "err" });
+    toast("That name is empty once the characters a filename cannot contain are removed.", {
+      kind: "err",
+    });
     return null;
   }
 

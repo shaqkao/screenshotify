@@ -1,6 +1,6 @@
 name: Release
 
-# Tag a version to publish an installer:
+# Tag a version to publish installers:
 #   npm version patch && git push --follow-tags
 on:
   push:
@@ -13,7 +13,22 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      # One platform failing should not throw away an installer the other one
+      # already produced — both attach to the same draft release.
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-latest
+            rust-targets: ""
+            args: ""
+          - platform: macos-latest
+            # One bundle that runs natively on both Apple Silicon and Intel,
+            # rather than two downloads users have to choose between.
+            rust-targets: "aarch64-apple-darwin,x86_64-apple-darwin"
+            args: "--target universal-apple-darwin"
+
+    runs-on: ${{ matrix.platform }}
 
     steps:
       - uses: actions/checkout@v4
@@ -24,16 +39,22 @@ jobs:
           cache: npm
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-targets }}
 
       - uses: swatinem/rust-cache@v2
         with:
           workspaces: src-tauri -> target
+          key: ${{ matrix.platform }}
 
       - name: Install dependencies
         run: npm ci
 
       - name: Unit tests
         run: npm test
+
+      - name: Backend tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml
 
       - name: Build and publish
         uses: tauri-apps/tauri-action@v0
@@ -43,13 +64,27 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
+          args: ${{ matrix.args }}
           tagName: ${{ github.ref_name }}
           releaseName: "Screenshotify ${{ github.ref_name }}"
           releaseBody: |
-            Download `Screenshotify_x64-setup.exe` below.
+            **Windows** — download `Screenshotify_x64-setup.exe`.
 
-            Windows will show a SmartScreen warning because this build is not
-            code-signed yet — click **More info** then **Run anyway**.
+            SmartScreen will warn you because this build is not code-signed
+            yet: click **More info** then **Run anyway**.
+
+            **macOS 10.15+ (Apple Silicon and Intel)** — download
+            `Screenshotify_universal.dmg`, open it, and drag Screenshotify to
+            Applications.
+
+            The app is not notarised yet, so the first launch needs
+            **right-click → Open** rather than a double-click. If macOS calls
+            it damaged instead, clear the download quarantine flag once:
+
+            ```
+            xattr -dr com.apple.quarantine /Applications/Screenshotify.app
+            ```
+
             See the README for details.
           releaseDraft: true
           prerelease: false

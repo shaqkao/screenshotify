@@ -1,7 +1,7 @@
 {
   "name": "screenshotify",
   "version": "0.1.6",
-  "description": "Open-source Windows tray app that automatically turns screenshots into meaningful filenames with AI.",
+  "description": "Open-source Windows tray and macOS menu bar app that automatically turns screenshots into meaningful filenames with AI.",
   "license": "MIT",
   "private": true,
   "type": "module",

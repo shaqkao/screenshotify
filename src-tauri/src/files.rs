@@ -204,8 +204,25 @@ pub fn revert(current: &str, original: &str) -> Result<(), String> {
     std::fs::rename(&from, &to).map_err(|e| format!("Undo failed: {e}"))
 }
 
-/// The folders Windows and the Xbox Game Bar save screenshots to, when present.
+/// The folders the OS saves screenshots to, when present.
 pub fn default_screenshot_folders() -> Vec<String> {
+    let mut seen: Vec<String> = Vec::new();
+    for path in screenshot_candidates() {
+        if !path.is_dir() {
+            continue;
+        }
+        let s = path.to_string_lossy().to_string();
+        if !seen.contains(&s) {
+            seen.push(s);
+        }
+    }
+    seen
+}
+
+/// Windows: the Pictures\Screenshots folder, its OneDrive-redirected twin, and
+/// the Xbox Game Bar's capture folder.
+#[cfg(windows)]
+fn screenshot_candidates() -> Vec<PathBuf> {
     let mut candidates: Vec<PathBuf> = Vec::new();
 
     if let Some(pics) = dirs::picture_dir() {
@@ -218,16 +235,99 @@ pub fn default_screenshot_folders() -> Vec<String> {
     if let Some(videos) = dirs::video_dir() {
         candidates.push(videos.join("Captures"));
     }
+    candidates
+}
 
-    let mut seen: Vec<String> = Vec::new();
-    for path in candidates {
-        if !path.is_dir() {
-            continue;
-        }
-        let s = path.to_string_lossy().to_string();
-        if !seen.contains(&s) {
-            seen.push(s);
-        }
+/// macOS: whatever `com.apple.screencapture location` says first — that setting
+/// is the only place the real answer lives, and moving screenshots off the
+/// Desktop is a common enough thing to do — then the Desktop it defaults to,
+/// then `~/Pictures/Screenshots` for anyone who keeps them there by hand.
+#[cfg(target_os = "macos")]
+fn screenshot_candidates() -> Vec<PathBuf> {
+    let mut candidates: Vec<PathBuf> = Vec::new();
+
+    if let Some(configured) = screencapture_location() {
+        candidates.push(configured);
     }
-    seen
+    if let Some(desktop) = dirs::desktop_dir() {
+        candidates.push(desktop);
+    }
+    if let Some(pics) = dirs::picture_dir() {
+        candidates.push(pics.join("Screenshots"));
+    }
+    candidates
+}
+
+/// Reads the screenshot destination out of the screencapture preference domain.
+/// `defaults` is used rather than parsing the plist directly because the value
+/// may live in a managed or per-host domain that only `defaults` resolves — and
+/// an unset key is the normal case, not an error.
+#[cfg(target_os = "macos")]
+fn screencapture_location() -> Option<PathBuf> {
+    let out = std::process::Command::new("defaults")
+        .args(["read", "com.apple.screencapture", "location"])
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        // The usual case: the key has never been set, so the Desktop it is.
+        return None;
+    }
+    expand_home(&String::from_utf8_lossy(&out.stdout))
+}
+
+/// `defaults` hands the value back exactly as it was typed, and typing a path
+/// with a tilde in it is the normal way to set this one — nothing else in the
+/// chain expands it.
+#[cfg(target_os = "macos")]
+fn expand_home(raw: &str) -> Option<PathBuf> {
+    let raw = raw.trim();
+    if raw.is_empty() {
+        return None;
+    }
+    if raw == "~" {
+        return dirs::home_dir();
+    }
+    match raw.strip_prefix("~/") {
+        Some(rest) => dirs::home_dir().map(|home| home.join(rest)),
+        None => Some(PathBuf::from(raw)),
+    }
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
+fn screenshot_candidates() -> Vec<PathBuf> {
+    let mut candidates: Vec<PathBuf> = Vec::new();
+    if let Some(pics) = dirs::picture_dir() {
+        candidates.push(pics.join("Screenshots"));
+        candidates.push(pics);
+    }
+    candidates
+}
+
+#[cfg(all(test, target_os = "macos"))]
+mod tests {
+    use super::expand_home;
+    use std::path::PathBuf;
+
+    #[test]
+    fn expands_the_tilde_defaults_hands_back() {
+        let home = dirs::home_dir().expect("a home directory");
+        assert_eq!(expand_home("~/Desktop"), Some(home.join("Desktop")));
+        assert_eq!(expand_home("~"), Some(home.clone()));
+        // Trailing newline: `defaults read` always adds one.
+        assert_eq!(expand_home("~/Pictures\n"), Some(home.join("Pictures")));
+    }
+
+    #[test]
+    fn leaves_an_absolute_path_alone() {
+        assert_eq!(
+            expand_home("/Volumes/Shots"),
+            Some(PathBuf::from("/Volumes/Shots"))
+        );
+    }
+
+    #[test]
+    fn treats_an_unset_value_as_no_answer() {
+        assert_eq!(expand_home(""), None);
+        assert_eq!(expand_home("  \n"), None);
+    }
 }

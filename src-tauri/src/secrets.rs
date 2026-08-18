@@ -1,15 +1,25 @@
 //! API key storage.
 //!
-//! The key goes to the Windows Credential Manager through the `keyring` crate.
-//! It is never written to the settings file, and it is never handed back to the
-//! frontend — requests that need it are made here in Rust.
+//! The key goes to the platform's own credential store through the `keyring`
+//! crate — the Windows Credential Manager on Windows, the login Keychain on
+//! macOS. It is never written to the settings file, and it is never handed back
+//! to the frontend — requests that need it are made here in Rust.
 
 const SERVICE: &str = "Screenshotify";
 const ACCOUNT: &str = "api-key";
 
+/// What to call the credential store in messages the user reads. The UI asks
+/// for this too (see `platform_info` in lib.rs) so its copy matches.
+#[cfg(windows)]
+pub const STORE_NAME: &str = "Windows Credential Manager";
+#[cfg(target_os = "macos")]
+pub const STORE_NAME: &str = "macOS Keychain";
+#[cfg(not(any(windows, target_os = "macos")))]
+pub const STORE_NAME: &str = "system keyring";
+
 fn entry() -> Result<keyring::Entry, String> {
     keyring::Entry::new(SERVICE, ACCOUNT)
-        .map_err(|e| format!("Could not reach the Windows Credential Manager: {e}"))
+        .map_err(|e| format!("Could not reach the {STORE_NAME}: {e}"))
 }
 
 pub fn set(key: &str) -> Result<(), String> {
@@ -44,3 +54,4 @@ pub fn delete() -> Result<(), String> {
         Err(e) => Err(format!("Could not remove the API key: {e}")),
     }
 }
+

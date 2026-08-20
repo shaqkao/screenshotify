@@ -14,6 +14,7 @@ on screen. Nothing is renamed until you say so.
 
 Free · open source · MIT · [bring your own API key](provider.md)
 
+<a href="https://maidensail.com/startup/screenshotify" rel="dofollow"><img src="https://maidensail.com/badge/screenshotify.svg" alt="Featured on Maidensail" height="36"></a>
 </div>
 
 ---

@@ -73,7 +73,11 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: "Screenshotify ${{ github.ref_name }}"
           releaseBody: |
-            [<img src="https://i.postimg.cc/d1Dp3HYj/windows.png" width="20" valign="middle" alt="windows"> Download for Windows](https://github.com/shaqkao/screenshotify/releases/download/${{ github.ref_name }}/Screenshotify_${{ steps.version.outputs.value }}_x64-setup.exe) · [<img src="https://i.postimg.cc/bwHThQ4K/apple.png" width="20" valign="middle" alt="apple"> Download for macOS](https://github.com/shaqkao/screenshotify/releases/download/${{ github.ref_name }}/Screenshotify_${{ steps.version.outputs.value }}_universal.dmg)
+            <p align="center">
+              <a href="https://github.com/shaqkao/screenshotify/releases/download/${{ github.ref_name }}/Screenshotify_${{ steps.version.outputs.value }}_x64-setup.exe"><img src="https://i.postimg.cc/7ZmVrVZR/windows.png" width="28" valign="middle" alt="windows"> Download for Windows</a>
+              ·
+              <a href="https://github.com/shaqkao/screenshotify/releases/download/${{ github.ref_name }}/Screenshotify_${{ steps.version.outputs.value }}_universal.dmg"><img src="https://i.postimg.cc/bwHThQ4K/apple.png" width="28" valign="middle" alt="apple"> Download for macOS</a>
+            </p>
 
             **Windows** — SmartScreen will warn you because this build isn't code-signed yet: click **More info**, then **Run anyway**.
 

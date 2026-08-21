@@ -56,6 +56,11 @@ jobs:
       - name: Backend tests
         run: cargo test --manifest-path src-tauri/Cargo.toml
 
+      - name: Read app version
+        id: version
+        shell: bash
+        run: echo "value=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
       - name: Build and publish
         uses: tauri-apps/tauri-action@v0
         env:
@@ -68,23 +73,16 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: "Screenshotify ${{ github.ref_name }}"
           releaseBody: |
-            **Windows** — download `Screenshotify_x64-setup.exe`.
+            [<img src="https://i.postimg.cc/d1Dp3HYj/windows.png" width="20" valign="middle" alt="windows"> Download for Windows](https://github.com/shaqkao/screenshotify/releases/download/${{ github.ref_name }}/Screenshotify_${{ steps.version.outputs.value }}_x64-setup.exe) · [<img src="https://i.postimg.cc/bwHThQ4K/apple.png" width="20" valign="middle" alt="apple"> Download for macOS](https://github.com/shaqkao/screenshotify/releases/download/${{ github.ref_name }}/Screenshotify_${{ steps.version.outputs.value }}_universal.dmg)
 
-            SmartScreen will warn you because this build is not code-signed
-            yet: click **More info** then **Run anyway**.
+            **Windows** — SmartScreen will warn you because this build isn't code-signed yet: click **More info**, then **Run anyway**.
 
-            **macOS 10.15+ (Apple Silicon and Intel)** — download
-            `Screenshotify_universal.dmg`, open it, and drag Screenshotify to
-            Applications.
-
-            The app is not notarised yet, so the first launch needs
-            **right-click → Open** rather than a double-click. If macOS calls
-            it damaged instead, clear the download quarantine flag once:
+            **macOS** — the app isn't notarised yet, so right-click it and choose **Open** the first time instead of double-clicking. If macOS says it's "damaged" instead, run this once in Terminal:
 
             ```
             xattr -dr com.apple.quarantine /Applications/Screenshotify.app
             ```
 
-            See the README for details.
+            See the [README](https://github.com/shaqkao/screenshotify#readme) for more details.
           releaseDraft: true
           prerelease: false

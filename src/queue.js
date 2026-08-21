@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { getSettings } from "./settings.js";
 import { buildStem } from "./naming.js";
 import { recordUsage } from "./stats.js";
+import { t } from "./i18n.js";
 
 /**
  * Holds every screenshot awaiting review and runs the AI calls with a bounded
@@ -128,7 +129,7 @@ export function cancelPending() {
     const item = items.get(id);
     if (item && item.status === "pending") {
       item.status = "error";
-      item.error = "Cancelled";
+      item.error = t("queue.cancelled");
       emit("update", item);
     }
   }
@@ -218,7 +219,7 @@ async function run(item) {
     item.raw = raw;
     if (!stem) {
       item.status = "error";
-      item.error = "The model did not return a usable name.";
+      item.error = t("queue.unusableName");
     } else {
       item.suggestion = stem;
       item.status = "ready";

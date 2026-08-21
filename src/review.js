@@ -3,6 +3,8 @@ import * as queue from "./queue.js";
 import * as history from "./history.js";
 import { sanitizeUserStem } from "./naming.js";
 import { toast } from "./toast.js";
+import { t } from "./i18n.js";
+import { showImageContextMenu } from "./contextmenu.js";
 
 /**
  * The review list. Rows are created once per queued file and mutated in place
@@ -14,12 +16,22 @@ let listEl;
 let emptyEl;
 let thumbObserver;
 
-const STATUS_TEXT = {
-  pending: "Queued",
-  working: "Asking the model…",
-  ready: "Suggested",
-  error: "Failed",
-};
+// Same closed/open folder glyphs as the "Scan a folder…" toolbar button
+// (index.html #btn-scan) — kept in sync with it so every folder-reveal
+// control in the app shares one icon.
+const FOLDER_CLOSED_PATH =
+  "M168-192q-29 0-50.5-21.5T96-264v-432q0-30 21.5-51t50.5-21h216l96 96h312q30 0 51 21t21 51v336q0 29-21 50.5T792-192H168Z";
+const FOLDER_OPEN_PATH =
+  "M168-192q-32 0-52-21t-20-51v-432q0-30 20-51t52-21h216l96 96h313q31 0 50.5 21t21.5 51H168v336l78-264h690l-85 285q-8 23-21 37t-38 14H168Z";
+
+function statusText(status) {
+  return {
+    pending: t("review.statusPending"),
+    working: t("review.statusWorking"),
+    ready: t("review.statusReady"),
+    error: t("review.statusError"),
+  }[status] || status;
+}
 
 /** Applies the "photos per row" setting; 1 keeps the plain single-column list. */
 export function setColumns(n) {
@@ -109,6 +121,12 @@ function addRow(item) {
   thumb.className = "thumb";
   thumb.dataset.path = item.path;
   thumb.addEventListener("click", () => openLightbox(item));
+  thumb.addEventListener("contextmenu", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const it = queue.getItem(item.id);
+    if (it) showImageContextMenu(ev.clientX, ev.clientY, it.path);
+  });
 
   const spinner = document.createElement("div");
   spinner.className = "chaotic-orbit";
@@ -131,7 +149,7 @@ function addRow(item) {
   input.className = "name-input";
   input.type = "text";
   input.spellcheck = false;
-  input.placeholder = "Waiting for a suggestion…";
+  input.placeholder = t("review.namePlaceholder");
   input.disabled = true;
   input.addEventListener("input", () => {
     const it = queue.getItem(item.id);
@@ -158,31 +176,36 @@ function addRow(item) {
 
   const applyBtn = document.createElement("button");
   applyBtn.className = "btn btn-primary btn-sm";
-  applyBtn.textContent = "Apply";
+  applyBtn.textContent = t("review.apply");
   applyBtn.disabled = true;
   applyBtn.addEventListener("click", () => applyOne(item.id));
 
   const skipBtn = document.createElement("button");
   skipBtn.className = "btn btn-ghost btn-sm";
-  skipBtn.textContent = "Skip";
-  skipBtn.title = "Remove from the list without renaming";
+  skipBtn.textContent = t("review.skip");
+  skipBtn.title = t("review.skipTitle");
   skipBtn.addEventListener("click", () => queue.removeItem(item.id));
 
   const retryBtn = document.createElement("button");
   retryBtn.className = "btn btn-sm";
-  retryBtn.textContent = "Retry";
+  retryBtn.textContent = t("review.retry");
   retryBtn.hidden = true;
   retryBtn.addEventListener("click", () => queue.retryOne(item.id));
 
   const revealBtn = document.createElement("button");
-  revealBtn.className = "btn btn-ghost btn-sm";
-  revealBtn.textContent = "Open folder";
+  revealBtn.className = "btn btn-ghost btn-icon-only btn-folder-reveal";
+  revealBtn.title = t("review.openFolder");
+  revealBtn.innerHTML =
+    `<svg class="btn-icon" viewBox="0 -960 960 960" aria-hidden="true">` +
+    `<path class="icon-folder-closed" d="${FOLDER_CLOSED_PATH}"></path>` +
+    `<path class="icon-folder-open" d="${FOLDER_OPEN_PATH}"></path>` +
+    `</svg>`;
   revealBtn.addEventListener("click", async () => {
     const it = queue.getItem(item.id);
     try {
       await invoke("reveal_file", { path: it.path });
     } catch (err) {
-      toast(`Could not open the folder: ${err}`, { kind: "err" });
+      toast(t("review.openFolderFailed", { error: err }), { kind: "err" });
     }
   });
 
@@ -191,7 +214,7 @@ function addRow(item) {
 
   rows.set(item.id, {
     el,
-    refs: { thumb, input, status, detail, applyBtn, skipBtn, retryBtn, original },
+    refs: { thumb, input, status, detail, applyBtn, skipBtn, retryBtn, revealBtn, original },
   });
   listEl.append(el);
   thumbObserver.observe(thumb);
@@ -219,13 +242,13 @@ function updateRow(item) {
     sp.className = "spinner";
     refs.status.append(sp);
   }
-  refs.status.append(document.createTextNode(STATUS_TEXT[item.status] || item.status));
+  refs.status.append(document.createTextNode(statusText(item.status)));
 
   if (item.status === "error") {
     refs.detail.textContent = item.error;
     refs.detail.title = item.error;
   } else {
-    refs.detail.textContent = item.edited ? "edited" : "";
+    refs.detail.textContent = item.edited ? t("review.edited") : "";
   }
 
   const editable = item.status === "ready";
@@ -236,6 +259,27 @@ function updateRow(item) {
 
   refs.applyBtn.disabled = !editable;
   refs.retryBtn.hidden = item.status !== "error";
+}
+
+/**
+ * Re-labels every row already in the list after the interface language
+ * changes. Only text content moves — the thumbnail elements are left alone,
+ * same reasoning as renderHistory in main.js: touching them would restart
+ * their image loading and cause every visible thumbnail to flash.
+ */
+export function refreshLocale() {
+  for (const [id, row] of rows) {
+    const item = queue.getItem(id);
+    const { refs } = row;
+    refs.input.placeholder = t("review.namePlaceholder");
+    refs.applyBtn.textContent = t("review.apply");
+    refs.skipBtn.textContent = t("review.skip");
+    refs.skipBtn.title = t("review.skipTitle");
+    refs.retryBtn.textContent = t("review.retry");
+    refs.revealBtn.title = t("review.openFolder");
+    if (item) updateRow(item);
+  }
+  refreshChrome();
 }
 
 /** Human-readable file size, e.g. 924 B / 245 KB / 3.1 MB. */
@@ -276,9 +320,7 @@ async function apply(id, batch) {
 
   const stem = sanitizeUserStem(item.suggestion);
   if (!stem) {
-    toast("That name is empty once the characters a filename cannot contain are removed.", {
-      kind: "err",
-    });
+    toast(t("review.emptyName"), { kind: "err" });
     return null;
   }
 
@@ -308,9 +350,9 @@ async function apply(id, batch) {
 export async function applyOne(id) {
   const entry = await apply(id);
   if (entry) {
-    toast("Renamed.", {
+    toast(t("review.renamed"), {
       kind: "ok",
-      action: { label: "Undo", onClick: () => history.undo(entry.id) },
+      action: { label: t("review.undo"), onClick: () => history.undo(entry.id) },
     });
   }
 }
@@ -337,16 +379,16 @@ export async function applyAll() {
   }
 
   const msg = failed
-    ? `Renamed ${done} file${done === 1 ? "" : "s"}, ${failed} failed.`
-    : `Renamed ${done} file${done === 1 ? "" : "s"}.`;
+    ? t("review.appliedSome", { count: done, failed })
+    : t("review.appliedAll", { count: done });
   toast(msg, {
     kind: failed ? "err" : "ok",
     timeout: 9000,
     action: {
-      label: "Undo all",
+      label: t("review.undoAll"),
       onClick: async () => {
         const res = await history.undoLastBatch();
-        toast(`Restored ${res.count} original name${res.count === 1 ? "" : "s"}.`, { kind: "ok" });
+        toast(t("review.restoredCount", { count: res.count }), { kind: "ok" });
       },
     },
   });
@@ -371,8 +413,8 @@ export function refreshChrome() {
 
   const status = document.getElementById("queue-status");
   const busy = queue.remaining();
-  if (busy > 0) status.textContent = `${busy} in progress…`;
-  else if (items.length) status.textContent = `${items.length} in list · ${ready} ready`;
+  if (busy > 0) status.textContent = t("review.busy", { count: busy });
+  else if (items.length) status.textContent = t("review.listStatus", { count: items.length, ready });
   else status.textContent = "";
 }
 
@@ -387,12 +429,19 @@ export async function openLightbox(item) {
   const img = document.createElement("img");
   lightbox.append(img);
   lightbox.addEventListener("click", closeLightbox);
+  // The image itself, not the dimmed backdrop — copies the original
+  // full-resolution file at item.path, same as right-clicking its thumbnail.
+  img.addEventListener("contextmenu", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    showImageContextMenu(ev.clientX, ev.clientY, item.path);
+  });
   document.body.append(lightbox);
   try {
     img.src = await invoke("thumbnail", { path: item.path, maxEdge: 1600 });
   } catch (err) {
     closeLightbox();
-    toast(`Could not open the preview: ${err}`, { kind: "err" });
+    toast(t("review.previewFailed", { error: err }), { kind: "err" });
   }
 }
 

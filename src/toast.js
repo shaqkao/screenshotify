@@ -1,3 +1,5 @@
+import { t } from "./i18n.js";
+
 const host = () => document.getElementById("toasts");
 
 // 512x512-viewBox glyphs, all sharing the same outer-circle shape as the
@@ -65,7 +67,7 @@ export function toast(message, { kind = "info", action = null, timeout = 5000 } 
   const closeBtn = document.createElement("button");
   closeBtn.className = "toast-close";
   closeBtn.type = "button";
-  closeBtn.setAttribute("aria-label", "Dismiss");
+  closeBtn.setAttribute("aria-label", t("toast.dismiss"));
   closeBtn.innerHTML = `
     <svg viewBox="0 0 15 15" aria-hidden="true">
       <path

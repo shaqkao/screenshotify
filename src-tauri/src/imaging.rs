@@ -39,6 +39,24 @@ pub fn encode_downscaled(path: &Path, max_edge: u32, quality: u8) -> Result<Stri
     Ok(format!("data:image/jpeg;base64,{b64}"))
 }
 
+/// Decodes an image file to raw RGBA8, for handing straight to the OS
+/// clipboard — copying the actual file rather than the downscaled preview
+/// `encode_downscaled` produces for upload.
+pub fn decode_rgba(path: &Path) -> Result<(Vec<u8>, u32, u32), String> {
+    let reader = image::ImageReader::open(path)
+        .map_err(|e| format!("Could not open the image: {e}"))?
+        .with_guessed_format()
+        .map_err(|e| format!("Could not read the image: {e}"))?;
+
+    let img = reader
+        .decode()
+        .map_err(|e| format!("Could not decode the image: {e}"))?;
+
+    let rgba = img.into_rgba8();
+    let (w, h) = (rgba.width(), rgba.height());
+    Ok((rgba.into_raw(), w, h))
+}
+
 /// A small solid-colour image used by "Test connection", so the check proves
 /// the endpoint really accepts image input rather than just chat.
 pub fn test_image() -> String {

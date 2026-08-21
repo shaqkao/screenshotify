@@ -20,8 +20,20 @@ import { initPlatform, platform, isMac } from "./platform.js";
 import { initStats, getModelUsage, onStatsChange, resetStats } from "./stats.js";
 import * as queue from "./queue.js";
 import * as history from "./history.js";
-import { initReview, applyAll, skipAll, refreshChrome, formatFileInfo, openLightbox, setColumns } from "./review.js";
+import {
+  initReview,
+  applyAll,
+  skipAll,
+  refreshChrome,
+  formatFileInfo,
+  openLightbox,
+  setColumns,
+  refreshLocale as refreshReviewLocale,
+} from "./review.js";
 import { toast } from "./toast.js";
+import { initI18n, t, onLocaleChange, localeTag } from "./i18n.js";
+import { showImageContextMenu } from "./contextmenu.js";
+import { initDateRangeFilter } from "./datefilter.js";
 
 const REPO_URL = "https://github.com/shaqkao/screenshotify";
 const PROVIDER_GUIDE_URL = "https://github.com/shaqkao/screenshotify/blob/master/provider.md";
@@ -51,6 +63,7 @@ async function main() {
   // First: everything below words itself according to what this returns.
   await initPlatform();
   await initSettings();
+  initI18n();
   await initStats();
   await history.initHistory();
 
@@ -65,6 +78,7 @@ async function main() {
   await initSettingsForm();
   await initNotifications();
   initBackendEvents();
+  initLocaleSync();
 
   history.onHistoryChange(applyHistoryFilter);
   applyHistoryFilter();
@@ -72,7 +86,9 @@ async function main() {
   await applyWatchState();
   await showWindowIfWanted();
 
-  $("app-version").textContent = `v${await getVersion()}`;
+  const appVersion = await getVersion();
+  $("app-version").textContent = `v${appVersion}`;
+  $("titlebar-version").textContent = `v${appVersion}`;
 
   if (getSettings().autoUpdate) {
     // Never block startup on the network.
@@ -121,10 +137,10 @@ function applyPlatformCopy() {
     const el = $(id);
     if (el) el.textContent = text;
   };
-  set("copy-key-store", keyStore);
-  set("copy-autostart", `Start Screenshotify when I ${loginPhrase}`);
-  set("copy-start-minimized", `Start hidden in the ${trayName}`);
-  set("copy-close-to-tray", `Closing the window hides it to the ${trayName} instead of quitting`);
+  set("provider-hint", t("settings.provider.hint", { keyStore }));
+  set("copy-autostart", t("settings.behaviour.autostart", { loginPhrase }));
+  set("copy-start-minimized", t("settings.behaviour.startMinimized", { trayName }));
+  set("copy-close-to-tray", t("settings.behaviour.closeToTray", { trayName }));
 }
 
 /* ══════════════════════════ Titlebar ══════════════════════════ */
@@ -179,7 +195,7 @@ function initTitlebar() {
     // display toggling on flex-item SVGs. Changing what's actually painted
     // sidesteps that entirely.
     maximizeIconPath.setAttribute("d", maximized ? RESTORE_PATH : MAXIMIZE_PATH);
-    maximizeBtn.title = maximized ? "Restore Down" : "Maximize";
+    maximizeBtn.title = maximized ? t("titlebar.restore") : t("titlebar.maximize");
     maximizeBtn.setAttribute("aria-label", maximizeBtn.title);
   };
 
@@ -201,6 +217,9 @@ function initTitlebar() {
 
 /* ══════════════════════════ Sidebar ══════════════════════════ */
 
+/** Set by initSidebarToggle; re-run on a language change to re-word the tooltip/label. */
+let refreshSidebarLabels = () => {};
+
 function initSidebarToggle() {
   const sidebar = document.querySelector(".sidebar");
   const toggle = $("sidebar-toggle");
@@ -212,7 +231,7 @@ function initSidebarToggle() {
 
   const apply = (collapsed) => {
     sidebar.classList.toggle("is-collapsed", collapsed);
-    const title = collapsed ? "Expand sidebar" : "Collapse sidebar";
+    const title = collapsed ? t("sidebar.expand") : t("sidebar.collapse");
     toggle.title = title;
     toggle.setAttribute("aria-expanded", String(!collapsed));
     menuIcon.classList.toggle("is-mirrored", collapsed);
@@ -222,6 +241,7 @@ function initSidebarToggle() {
   };
 
   apply(!!getSettings().sidebarCollapsed);
+  refreshSidebarLabels = () => apply(sidebar.classList.contains("is-collapsed"));
 
   const toggleCollapsed = async () => {
     const collapsed = !sidebar.classList.contains("is-collapsed");
@@ -298,7 +318,7 @@ function initBackendEvents() {
 
   listen("screenshotify://watch-error", async (event) => {
     const { fatal, message } = event.payload;
-    toast(fatal ? `Folder watching stopped: ${message}` : message, {
+    toast(fatal ? t("watch.stoppedFatal", { message }) : message, {
       kind: "err",
       timeout: 12000,
     });
@@ -410,7 +430,7 @@ async function applyWatchState() {
       await invoke("stop_watching");
     }
   } catch (err) {
-    toast(`Could not start watching: ${err}`, { kind: "err" });
+    toast(t("watch.startFailed", { error: err }), { kind: "err" });
   }
   updateTrayTooltip();
 }
@@ -421,21 +441,21 @@ function renderWatchPill() {
   const pill = $("watch-toggle");
   pill.classList.toggle("is-on", on);
   $("watch-label").textContent = !s.watchFolders.length
-    ? "No folders"
+    ? t("watch.noFolders")
     : on
-      ? "Watching"
-      : "Paused";
+      ? t("watch.watching")
+      : t("watch.paused");
   pill.title = on
-    ? `Watching ${s.watchFolders.length} folder${s.watchFolders.length === 1 ? "" : "s"} — click to pause`
-    : "Click to resume watching";
+    ? t("watch.tooltipOn", { count: s.watchFolders.length })
+    : t("watch.tooltipOff");
 
   const hint = $("empty-hint");
   if (hint) {
     hint.textContent = !s.watchFolders.length
-      ? "No folders are being watched yet. Add one in Settings, or scan an existing folder below."
+      ? t("watch.hintNoFolders")
       : on
-        ? "Screenshotify is watching your screenshot folders. Take a screenshot and a suggested name will show up here."
-        : "Watching is paused. Resume it from the button in the top-right, or scan a folder below.";
+        ? t("watch.hintOn")
+        : t("watch.hintOff");
   }
 }
 
@@ -443,7 +463,7 @@ async function toggleWatch() {
   const s = getSettings();
   if (!s.watchFolders.length) {
     showView("settings");
-    toast("Add a folder to watch first.", { kind: "info" });
+    toast(t("watch.needFolder"), { kind: "info" });
     return;
   }
   await updateSettings({ watchEnabled: !s.watchEnabled });
@@ -481,7 +501,7 @@ function renderAiProgress() {
   const total = queue.allItems().length;
   const done = total - left;
   pill.hidden = false;
-  $("ai-progress-text").textContent = `Asking the model… ${done} of ${total}`;
+  $("ai-progress-text").textContent = t("review.askingModel", { done, total });
 }
 
 /**
@@ -498,9 +518,8 @@ async function queueEntries(entries, emptyMessage) {
   // picture library is real money, so make the size explicit first.
   if (entries.length > BULK_CONFIRM_AT) {
     const proceed = await ask(
-      `${entries.length} images found.\n\nScreenshotify sends one request per image to ${getSettings().baseUrl}. ` +
-        `On a paid endpoint that is ${entries.length} billable requests.\n\nQueue them all?`,
-      { title: "That is a lot of images", kind: "warning", okLabel: "Queue them", cancelLabel: "Cancel" }
+      t("dialog.bulkMessage", { count: entries.length, baseUrl: getSettings().baseUrl }),
+      { title: t("dialog.bulkTitle"), kind: "warning", okLabel: t("dialog.bulkOk"), cancelLabel: t("dialog.bulkCancel") }
     );
     if (!proceed) return;
   }
@@ -510,8 +529,8 @@ async function queueEntries(entries, emptyMessage) {
   refreshChrome();
   toast(
     added.length === entries.length
-      ? `Queued ${added.length} image${added.length === 1 ? "" : "s"}.`
-      : `Queued ${added.length} new image${added.length === 1 ? "" : "s"} (${entries.length - added.length} already in the list).`,
+      ? t("queue.queuedAll", { count: added.length })
+      : t("queue.queuedSome", { count: added.length, already: entries.length - added.length }),
     { kind: "ok" }
   );
 }
@@ -521,7 +540,7 @@ async function scanFolder() {
   const dir = await openDialog({
     directory: true,
     multiple: false,
-    title: "Choose a folder of screenshots to rename",
+    title: t("dialog.scanFolderTitle"),
   });
   if (!dir) return;
 
@@ -529,11 +548,11 @@ async function scanFolder() {
   try {
     entries = await invoke("scan_folder", { folder: dir, recursive: false });
   } catch (err) {
-    toast(`Could not read that folder: ${err}`, { kind: "err" });
+    toast(t("queue.scanFailed", { error: err }), { kind: "err" });
     return;
   }
 
-  await queueEntries(entries, "No images found in that folder.");
+  await queueEntries(entries, t("queue.emptyFolder"));
 }
 
 /** Pick individual files and queue only those, instead of a whole folder. */
@@ -541,8 +560,8 @@ async function pickFiles() {
   const picked = await openDialog({
     directory: false,
     multiple: true,
-    title: "Choose screenshots to rename",
-    filters: [{ name: "Images", extensions: IMAGE_EXTS }],
+    title: t("dialog.pickFilesTitle"),
+    filters: [{ name: t("dialog.imagesFilter"), extensions: IMAGE_EXTS }],
   });
   if (!picked) return;
   const paths = Array.isArray(picked) ? picked : [picked];
@@ -551,81 +570,152 @@ async function pickFiles() {
   try {
     entries = await invoke("scan_files", { paths });
   } catch (err) {
-    toast(`Could not read those files: ${err}`, { kind: "err" });
+    toast(t("queue.pickFailed", { error: err }), { kind: "err" });
     return;
   }
 
-  await queueEntries(entries, "None of the selected files are images.");
+  await queueEntries(entries, t("queue.emptyFiles"));
 }
 
 /* ══════════════════════════ History view ══════════════════════════ */
 
-const historyFilter = { query: "", status: "all" };
+const historyFilter = { query: "", from: null, to: null };
+
+/** Set by initHistoryView() so initLocaleSync() can refresh the calendar's month/weekday names. */
+let historyDateFilter = null;
 
 function matchesHistoryFilter(entry) {
-  if (historyFilter.status === "active" && entry.undone) return false;
-  if (historyFilter.status === "undone" && !entry.undone) return false;
   if (historyFilter.query) {
     const toName = basename(entry.to).toLowerCase();
     const fromName = basename(entry.from).toLowerCase();
     if (!toName.includes(historyFilter.query) && !fromName.includes(historyFilter.query)) return false;
   }
+  if (historyFilter.from != null && entry.at < historyFilter.from) return false;
+  if (historyFilter.to != null && entry.at > historyFilter.to) return false;
   return true;
 }
 
 /**
- * Filters history.listEntries() by the search box + status dropdown, then
- * hands the result to renderHistory. Kept separate from renderHistory (which
- * just patches whatever list it's given) so history.onHistoryChange can call
- * this directly and always re-apply the current filter to fresh data.
+ * Filters history.listEntries() by the search box and date range, then hands
+ * the result to renderHistory. Kept separate from renderHistory (which just
+ * patches whatever list it's given) so history.onHistoryChange can call this
+ * directly and always re-apply the current filter to fresh data.
  */
 function applyHistoryFilter() {
   const all = history.listEntries();
   const filtered = all.filter(matchesHistoryFilter);
 
-  const hasFilter = historyFilter.query || historyFilter.status !== "all";
+  const hasFilter = historyFilter.query || historyFilter.from != null || historyFilter.to != null;
   $("history-empty-title").textContent =
-    all.length === 0 ? "Nothing renamed yet" : "No matching renames";
+    all.length === 0 ? t("history.emptyTitleNone") : t("history.emptyTitleFiltered");
   $("history-empty-hint").textContent =
     all.length === 0
-      ? "Once you apply a suggestion it will be listed here so you can undo it."
+      ? t("history.emptyHintNone")
       : hasFilter
-      ? "Try a different search or filter."
+      ? t("history.emptyHintFiltered")
       : "";
 
   renderHistory(filtered);
+  renderHistoryRangeSummary(filtered.length);
+}
+
+/**
+ * Shows the visible-entry count next to the search bar: just "{count} images"
+ * normally, or "{range} · {count} images" once a bounded date range is active.
+ * `count` already reflects both the search query and the date range, so it
+ * always matches what's actually listed below.
+ */
+function renderHistoryRangeSummary(count) {
+  const el = $("history-range-summary");
+  const text = $("history-range-summary-text");
+  const { from, to } = historyFilter;
+  if (from == null && to == null) {
+    text.textContent = t("history.countSummary", { count });
+    el.hidden = false;
+    return;
+  }
+  const fmt = new Intl.DateTimeFormat(localeTag(), { month: "short", day: "numeric" });
+  const fromLabel = from != null ? fmt.format(from) : null;
+  const toLabel = to != null ? fmt.format(to) : null;
+  const range =
+    fromLabel && toLabel ? (fromLabel === toLabel ? fromLabel : `${fromLabel} – ${toLabel}`) : fromLabel || toLabel;
+  text.textContent = t("history.rangeSummary", { range, count });
+  el.hidden = false;
+}
+
+/**
+ * Sends the count badge to its own full-width row (via the .is-wrapped class
+ * from styles.css) once there's no longer room for it next to the search
+ * box, instead of letting it crowd the search box or overlap
+ * Undo/Clear — see the .toolbar-wrap comment in styles.css for why this
+ * needs measuring in JS rather than plain CSS flex-wrap. Reacts to both the
+ * toolbar resizing and the badge's own text changing width (locale switch,
+ * "N images" vs. "range · N images").
+ */
+function initHistoryToolbarWrap() {
+  const toolbar = $("history-toolbar");
+  const badge = $("history-range-summary");
+  const right = toolbar?.querySelector(".toolbar-right");
+  if (!toolbar || !badge || !right || typeof ResizeObserver === "undefined") return;
+
+  // Mirrors styles.css: .history-search's min-width, .toolbar's horizontal
+  // padding (12px 16px) and gap (10px).
+  const SEARCH_MIN = 330;
+  const PADDING_X = 32;
+  const GAP = 10;
+
+  const update = () => {
+    // Drop .is-wrapped first so badge.offsetWidth reads its natural pill
+    // size rather than the flex-basis: 100% that class forces onto it —
+    // otherwise a previously-wrapped badge would measure as "the whole
+    // toolbar's width" and the toolbar could never un-wrap again.
+    toolbar.classList.remove("is-wrapped");
+    const available = toolbar.clientWidth - PADDING_X;
+    const needed = SEARCH_MIN + GAP + badge.offsetWidth + GAP + right.offsetWidth;
+    toolbar.classList.toggle("is-wrapped", available < needed);
+  };
+
+  const ro = new ResizeObserver(update);
+  ro.observe(toolbar);
+  ro.observe(badge);
+  update();
 }
 
 function initHistoryView() {
+  initHistoryToolbarWrap();
   $("history-search").addEventListener("input", (ev) => {
     historyFilter.query = ev.target.value.trim().toLowerCase();
     applyHistoryFilter();
   });
 
-  $("history-status-filter").addEventListener("change", (ev) => {
-    historyFilter.status = ev.target.value;
-    $("history-filter-trigger").classList.toggle("is-filtered", historyFilter.status !== "all");
-    applyHistoryFilter();
+  historyDateFilter = initDateRangeFilter({
+    toggle: $("csel-toggle-history-time"),
+    trigger: $("history-time-filter-trigger"),
+    panel: document.querySelector(".date-filter-panel"),
+    onChange: ({ from, to }) => {
+      historyFilter.from = from;
+      historyFilter.to = to;
+      applyHistoryFilter();
+    },
   });
-  enhanceSelect($("history-status-filter"));
 
   $("btn-undo-last").addEventListener("click", async () => {
     const res = await history.undoLastBatch();
     if (!res.count && !res.failed) {
-      toast("Nothing left to undo.", { kind: "info" });
+      toast(t("history.nothingToUndo"), { kind: "info" });
       return;
     }
     toast(
       res.failed
-        ? `Restored ${res.count}, ${res.failed} could not be restored.`
-        : `Restored ${res.count} original name${res.count === 1 ? "" : "s"}.`,
+        ? t("history.restoredPartial", { count: res.count, failed: res.failed })
+        : t("history.restoredAll", { count: res.count }),
       { kind: res.failed ? "err" : "ok" }
     );
   });
 
   $("btn-clear-history").addEventListener("click", async () => {
     await history.clearHistory();
-    toast("History cleared. Files themselves are untouched.", { kind: "info" });
+    toast(t("history.cleared"), { kind: "info" });
   });
 }
 
@@ -715,6 +805,13 @@ const UNDO_ICON_PATH =
 const REDO_ICON_PATH =
   "M384-192q-80 0-136-56t-56-136q0-80 56-136t136-56h246l-93-93 51-51 180 180-180 180-51-51 93-93H384q-50 0-85 35t-35 85q0 50 35 85t85 35h288v72H384Z";
 
+// Same closed/open folder glyphs as the "Scan a folder…" toolbar button
+// (index.html #btn-scan) and review.js's per-row reveal button.
+const FOLDER_CLOSED_PATH =
+  "M168-192q-29 0-50.5-21.5T96-264v-432q0-30 21.5-51t50.5-21h216l96 96h312q30 0 51 21t21 51v336q0 29-21 50.5T792-192H168Z";
+const FOLDER_OPEN_PATH =
+  "M168-192q-32 0-52-21t-20-51v-432q0-30 20-51t52-21h216l96 96h313q31 0 50.5 21t21.5 51H168v336l78-264h690l-85 285q-8 23-21 37t-38 14H168Z";
+
 const historyRows = new Map(); // id -> { el, refs }
 
 /**
@@ -770,6 +867,11 @@ function buildHistoryRow(entry) {
   thumb.addEventListener("click", () =>
     openLightbox({ path: entry.undone ? entry.from : entry.to })
   );
+  thumb.addEventListener("contextmenu", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (thumb.dataset.path) showImageContextMenu(ev.clientX, ev.clientY, thumb.dataset.path);
+  });
 
   const spinner = document.createElement("div");
   spinner.className = "chaotic-orbit";
@@ -783,8 +885,9 @@ function buildHistoryRow(entry) {
 
   const from = document.createElement("div");
   from.className = "hrow-from";
-  from.innerHTML = "was <s></s>";
-  const fromName = from.querySelector("s");
+  const fromLabel = document.createElement("span");
+  const fromName = document.createElement("s");
+  from.append(fromLabel, fromName);
 
   const info = document.createElement("div");
   info.className = "hrow-info";
@@ -795,7 +898,7 @@ function buildHistoryRow(entry) {
   const time = document.createElement("div");
   time.className = "hrow-time";
   time.textContent = relativeTime(entry.at);
-  time.title = new Date(entry.at).toLocaleString();
+  time.title = new Date(entry.at).toLocaleString(localeTag());
 
   const btn = document.createElement("button");
   btn.className = "btn btn-sm hrow-undo-btn";
@@ -808,28 +911,54 @@ function buildHistoryRow(entry) {
     try {
       if (entry.undone) {
         await history.redo(entry.id);
-        toast("Renamed back to the suggested name.", { kind: "ok" });
+        toast(t("history.redone"), { kind: "ok" });
       } else {
         await history.undo(entry.id);
-        toast("Original name restored.", { kind: "ok" });
+        toast(t("history.undone"), { kind: "ok" });
       }
     } catch (err) {
-      toast(`Could not ${entry.undone ? "redo" : "undo"}: ${err}`, { kind: "err" });
+      toast(entry.undone ? t("history.redoFailed", { error: err }) : t("history.undoFailed", { error: err }), { kind: "err" });
     }
   });
 
-  // Wrapped so the grid layout (styles.css: .list.is-grid .hrow-foot) can
-  // put time and the button on one line without changing the flat list's
-  // appearance — .hrow-foot is `display: contents` there, i.e. invisible.
+  const revealBtn = document.createElement("button");
+  revealBtn.className = "btn btn-ghost btn-icon-only btn-folder-reveal";
+  revealBtn.title = t("review.openFolder");
+  revealBtn.innerHTML =
+    `<svg class="btn-icon" viewBox="0 -960 960 960" aria-hidden="true">` +
+    `<path class="icon-folder-closed" d="${FOLDER_CLOSED_PATH}"></path>` +
+    `<path class="icon-folder-open" d="${FOLDER_OPEN_PATH}"></path>` +
+    `</svg>`;
+  // Same "read the path fresh at click time" reasoning as the thumb's own
+  // click/contextmenu handlers above — undo/redo can repoint this row at a
+  // different file without rebuilding it.
+  revealBtn.addEventListener("click", async () => {
+    const path = thumb.dataset.path;
+    if (!path) return;
+    try {
+      await invoke("reveal_file", { path });
+    } catch (err) {
+      toast(t("review.openFolderFailed", { error: err }), { kind: "err" });
+    }
+  });
+
+  // Grouped with Undo/Redo so .hrow-foot (styles.css) only ever has to treat
+  // the footer as two things — time, and this actions pair — in both the
+  // flat list and the grid layout (.list.is-grid .hrow-foot: time vs.
+  // actions pushed to opposite edges of the full-width footer line).
+  const actions = document.createElement("div");
+  actions.className = "hrow-actions";
+  actions.append(revealBtn, btn);
+
   const foot = document.createElement("div");
   foot.className = "hrow-foot";
-  foot.append(time, btn);
+  foot.append(time, actions);
 
   el.append(thumbWrap, main, foot);
 
   const row = {
     el,
-    refs: { thumb, to, fromName, btn, btnIcon, btnLabel },
+    refs: { thumb, to, fromLabel, fromName, time, revealBtn, btn, btnIcon, btnLabel },
     thumbCache: new Map(),
   };
   updateHistoryRow(row, entry);
@@ -865,10 +994,11 @@ function updateHistoryRow(row, entry) {
 
   refs.to.textContent = basename(currentPath);
   refs.to.title = currentPath;
+  refs.fromLabel.textContent = t("history.wasLabel");
   refs.fromName.textContent = basename(previousPath);
 
   refs.btnIcon.setAttribute("d", entry.undone ? REDO_ICON_PATH : UNDO_ICON_PATH);
-  refs.btnLabel.textContent = entry.undone ? "Redo" : "Undo";
+  refs.btnLabel.textContent = entry.undone ? t("history.redoBtn") : t("history.undoBtn");
 }
 
 function basename(p) {
@@ -878,11 +1008,29 @@ function basename(p) {
 function relativeTime(ms) {
   const diff = Date.now() - ms;
   const min = Math.round(diff / 60000);
-  if (min < 1) return "just now";
-  if (min < 60) return `${min} min ago`;
+  if (min < 1) return t("history.justNow");
+  if (min < 60) return t("history.minAgo", { n: min });
   const hr = Math.round(min / 60);
-  if (hr < 24) return `${hr} h ago`;
-  return new Date(ms).toLocaleDateString();
+  if (hr < 24) return t("history.hourAgo", { n: hr });
+  return new Date(ms).toLocaleDateString(localeTag());
+}
+
+/**
+ * Re-labels every history row already rendered after the interface language
+ * changes, without touching thumbnails (same reasoning as review.js's
+ * refreshLocale — rebuilding the thumb element would restart its load).
+ */
+function refreshHistoryLocale() {
+  for (const [id, row] of historyRows) {
+    const entry = history.listEntries().find((e) => e.id === id);
+    if (!entry) continue;
+    row.refs.time.textContent = relativeTime(entry.at);
+    row.refs.time.title = new Date(entry.at).toLocaleString(localeTag());
+    row.refs.fromLabel.textContent = t("history.wasLabel");
+    row.refs.btnLabel.textContent = entry.undone ? t("history.redoBtn") : t("history.undoBtn");
+    row.refs.revealBtn.title = t("review.openFolder");
+  }
+  applyHistoryFilter();
 }
 
 /* ══════════════════════════ Settings form ══════════════════════════ */
@@ -906,9 +1054,9 @@ async function initSettingsForm() {
       await saveApiKey(value);
       ev.target.value = "";
       await renderKeyStatus();
-      toast(`API key saved to the ${platform().keyStore}.`, { kind: "ok" });
+      toast(t("settings.provider.keySaved", { keyStore: platform().keyStore }), { kind: "ok" });
     } catch (err) {
-      toast(`Could not save the key: ${err}`, { kind: "err" });
+      toast(t("settings.provider.keySaveFailed", { error: err }), { kind: "err" });
     }
   });
 
@@ -917,9 +1065,9 @@ async function initSettingsForm() {
       await clearApiKey();
       keyInput.value = "";
       await renderKeyStatus();
-      toast("API key removed.", { kind: "ok" });
+      toast(t("settings.provider.keyRemoved"), { kind: "ok" });
     } catch (err) {
-      toast(`Could not remove the key: ${err}`, { kind: "err" });
+      toast(t("settings.provider.keyRemoveFailed", { error: err }), { kind: "err" });
     }
   });
 
@@ -932,7 +1080,7 @@ async function initSettingsForm() {
   onSettingsChange(renderUsage); // re-highlight the current model when it changes
   $("btn-reset-stats").addEventListener("click", async () => {
     await resetStats();
-    toast("Usage stats reset.", { kind: "info" });
+    toast(t("settings.usage.resetDone"), { kind: "info" });
   });
 
   // — folders —
@@ -950,6 +1098,8 @@ async function initSettingsForm() {
   bindText("set-prompt-extra", "promptExtra");
 
   // — behaviour —
+  bindSelect("set-ui-language", "uiLanguage");
+  enhanceSelect($("set-ui-language"));
   bindSelect("set-list-columns", "listColumns", applyListColumns);
   enhanceSelect($("set-list-columns"));
   bindCheck("set-watch-enabled", "watchEnabled", applyWatchState);
@@ -973,19 +1123,18 @@ async function initSettingsForm() {
       if (autostartInput.checked) await enableAutostart();
       else await disableAutostart();
       await updateSettings({ autostart: autostartInput.checked });
+      toastSettingsSaved();
     } catch (err) {
       autostartInput.checked = !autostartInput.checked;
-      toast(`Could not change the startup setting: ${err}`, { kind: "err" });
+      toast(t("settings.behaviour.startupFailed", { error: err }), { kind: "err" });
     }
   });
 
   // — updates —
   bindCheck("set-auto-update", "autoUpdate");
   $("btn-check-update").addEventListener("click", () => checkForUpdates({ silent: false }));
-  $("link-repo").addEventListener("click", (ev) => {
-    ev.preventDefault();
-    openUrl(REPO_URL);
-  });
+  $("btn-star-github").addEventListener("click", () => openUrl(REPO_URL));
+  loadRepoStars();
   $("link-provider-guide").addEventListener("click", (ev) => {
     ev.preventDefault();
     openUrl(PROVIDER_GUIDE_URL);
@@ -994,10 +1143,32 @@ async function initSettingsForm() {
   await invoke("set_close_to_tray", { enabled: !!s.closeToTray }).catch(() => {});
 }
 
+/** Confirms a settings-store write the user just made from the Settings form. */
+function toastSettingsSaved() {
+  toast(t("settings.saved"), { kind: "ok", timeout: 2000 });
+}
+
+/**
+ * Fills in the "Star on GitHub" button's live count. Failures (offline, rate
+ * limited) are silent — the button still works as a plain link either way,
+ * so there's nothing worth interrupting the user over.
+ */
+async function loadRepoStars() {
+  try {
+    const count = await invoke("repo_stars", { owner: "shaqkao", repo: "screenshotify" });
+    $("repo-star-count").textContent = count.toLocaleString(localeTag());
+  } catch {
+    $("repo-star-count").closest(".star-github-count").hidden = true;
+  }
+}
+
 function bindText(id, key) {
   const el = $(id);
   el.value = getSettings()[key] ?? "";
-  el.addEventListener("change", () => updateSettings({ [key]: el.value.trim() }));
+  el.addEventListener("change", async () => {
+    await updateSettings({ [key]: el.value.trim() });
+    toastSettingsSaved();
+  });
 }
 
 function bindSelect(id, key, after) {
@@ -1005,9 +1176,17 @@ function bindSelect(id, key, after) {
   el.value = getSettings()[key];
   el.addEventListener("change", async () => {
     await updateSettings({ [key]: el.value });
+    toastSettingsSaved();
     if (after) after();
   });
 }
+
+// Re-sync functions for every enhanceSelect below, run after a language
+// change: i18n.js's applyStaticDom() already retranslated the underlying
+// <option> elements (via their own data-i18n), but the custom dropdown's
+// button labels and closed-state display were copied from them once at
+// build time and don't pick that up on their own.
+const enhancedSelectRefreshers = [];
 
 // Builds the custom .csel dropdown UI around a hidden native <select>. The
 // select stays the single source of truth for value/events (bindSelect keeps
@@ -1053,6 +1232,13 @@ function enhanceSelect(select) {
   select.addEventListener("change", sync);
   sync();
 
+  enhancedSelectRefreshers.push(() => {
+    Array.from(select.options).forEach((opt, i) => {
+      options[i].textContent = opt.textContent;
+    });
+    sync();
+  });
+
   trigger.addEventListener("keydown", (ev) => {
     if (ev.key === "Enter" || ev.key === " ") {
       ev.preventDefault();
@@ -1068,6 +1254,7 @@ function bindCheck(id, key, after) {
   el.checked = !!getSettings()[key];
   el.addEventListener("change", async () => {
     await updateSettings({ [key]: el.checked });
+    toastSettingsSaved();
     if (after) await after();
     renderWatchPill();
   });
@@ -1087,6 +1274,7 @@ function bindNumberInput(id, key, { min, max }, after) {
     const n = Math.min(max, Math.max(min, Number(el.value) || min));
     el.value = String(n);
     await updateSettings({ [key]: n });
+    toastSettingsSaved();
     if (after) after();
   });
 }
@@ -1095,8 +1283,8 @@ async function renderKeyStatus() {
   const stored = await hasApiKey().catch(() => false);
   const el = $("key-status");
   el.textContent = stored
-    ? `A key is stored in the ${platform().keyStore}. Type a new one to replace it.`
-    : "No key stored. Local endpoints such as Ollama usually do not need one.";
+    ? t("settings.provider.keyStatusStored", { keyStore: platform().keyStore })
+    : t("settings.provider.keyStatusEmpty");
 }
 
 /* ── Folders ──────────────────────────────────────────────────────────── */
@@ -1141,31 +1329,31 @@ function renderUsage() {
     if (id === currentModel) {
       const badge = document.createElement("span");
       badge.className = "usage-current-badge";
-      badge.textContent = "Current";
+      badge.textContent = t("settings.usage.current");
       row.append(badge);
     }
 
     const requests = document.createElement("span");
     requests.className = "usage-stat";
-    requests.textContent = `${entry.requests.toLocaleString()} req${entry.requests === 1 ? "" : "s"}`;
+    requests.textContent = t("settings.usage.req", { n: entry.requests.toLocaleString(localeTag()), count: entry.requests });
     row.append(requests);
 
     const input = document.createElement("span");
     input.className = "usage-stat";
-    input.textContent = `${entry.promptTokens.toLocaleString()} in`;
+    input.textContent = t("settings.usage.in", { n: entry.promptTokens.toLocaleString(localeTag()) });
     row.append(input);
 
     const output = document.createElement("span");
     output.className = "usage-stat";
-    output.textContent = `${entry.completionTokens.toLocaleString()} out`;
+    output.textContent = t("settings.usage.out", { n: entry.completionTokens.toLocaleString(localeTag()) });
     row.append(output);
 
     host.append(row);
   }
 
-  $("usage-total-requests").textContent = totalRequests.toLocaleString();
-  $("usage-total-input").textContent = totalInput.toLocaleString();
-  $("usage-total-output").textContent = totalOutput.toLocaleString();
+  $("usage-total-requests").textContent = totalRequests.toLocaleString(localeTag());
+  $("usage-total-input").textContent = totalInput.toLocaleString(localeTag());
+  $("usage-total-output").textContent = totalOutput.toLocaleString(localeTag());
 }
 
 function renderFolders() {
@@ -1176,7 +1364,7 @@ function renderFolders() {
   if (!folders.length) {
     const empty = document.createElement("div");
     empty.className = "folder-empty";
-    empty.textContent = "No folders yet — nothing is being watched.";
+    empty.textContent = t("settings.folders.empty");
     host.append(empty);
     return;
   }
@@ -1192,7 +1380,7 @@ function renderFolders() {
 
     const openBtn = document.createElement("button");
     openBtn.className = "btn btn-ghost btn-sm";
-    openBtn.textContent = "Open";
+    openBtn.textContent = t("settings.folders.open");
     openBtn.addEventListener("click", async () => {
       try {
         await invoke("open_folder", { path: folder });
@@ -1203,10 +1391,11 @@ function renderFolders() {
 
     const del = document.createElement("button");
     del.className = "btn btn-ghost btn-sm btn-danger";
-    del.textContent = "Remove";
+    del.textContent = t("settings.folders.remove");
     del.addEventListener("click", async () => {
       const next = getSettings().watchFolders.filter((f) => f !== folder);
       await updateSettings({ watchFolders: next });
+      toastSettingsSaved();
       renderFolders();
       renderWatchPill();
       await applyWatchState();
@@ -1221,15 +1410,16 @@ async function addFolder() {
   const dir = await openDialog({
     directory: true,
     multiple: false,
-    title: "Choose a folder to watch",
+    title: t("dialog.addFolderTitle"),
   });
   if (!dir) return;
   const folders = getSettings().watchFolders;
   if (folders.includes(dir)) {
-    toast("That folder is already being watched.", { kind: "info" });
+    toast(t("settings.folders.alreadyWatching"), { kind: "info" });
     return;
   }
   await updateSettings({ watchFolders: [...folders, dir] });
+  toastSettingsSaved();
   renderFolders();
   renderWatchPill();
   await applyWatchState();
@@ -1238,16 +1428,17 @@ async function addFolder() {
 async function addDefaultFolders() {
   const guessed = await invoke("default_screenshot_folders").catch(() => []);
   if (!guessed.length) {
-    toast("No standard screenshot folder was found on this PC.", { kind: "info" });
+    toast(t("settings.folders.noDefault"), { kind: "info" });
     return;
   }
   const folders = getSettings().watchFolders;
   const merged = [...new Set([...folders, ...guessed])];
   if (merged.length === folders.length) {
-    toast("Those folders are already in the list.", { kind: "info" });
+    toast(t("settings.folders.alreadyListed"), { kind: "info" });
     return;
   }
   await updateSettings({ watchFolders: merged });
+  toastSettingsSaved();
   renderFolders();
   renderWatchPill();
   await applyWatchState();
@@ -1258,7 +1449,7 @@ async function addDefaultFolders() {
 async function loadModels() {
   const btn = $("btn-load-models");
   btn.disabled = true;
-  btn.textContent = "Loading…";
+  btn.textContent = t("settings.provider.loading");
   try {
     const models = await invoke("list_models", { baseUrl: getSettings().baseUrl });
     const list = $("model-list");
@@ -1270,15 +1461,15 @@ async function loadModels() {
     }
     toast(
       models.length
-        ? `${models.length} models available — click the model box to pick one.`
-        : "The endpoint returned no model list. Type the name yourself.",
+        ? t("settings.provider.modelsFound", { count: models.length })
+        : t("settings.provider.modelsEmpty"),
       { kind: models.length ? "ok" : "info" }
     );
   } catch (err) {
-    toast(`Could not list models: ${err}`, { kind: "err", timeout: 9000 });
+    toast(t("settings.provider.modelsFailed", { error: err }), { kind: "err", timeout: 9000 });
   } finally {
     btn.disabled = false;
-    btn.textContent = "Load models";
+    btn.textContent = t("settings.provider.loadModels");
   }
 }
 
@@ -1293,7 +1484,7 @@ async function testConnection() {
 
   box.hidden = false;
   box.className = "test-result busy";
-  box.textContent = "Sending a small test image…";
+  box.textContent = t("settings.provider.testing");
   btn.disabled = true;
 
   try {
@@ -1302,7 +1493,7 @@ async function testConnection() {
       model: s.model,
     });
     box.className = "test-result ok";
-    box.textContent = `Working. ${s.model} accepted an image and replied: "${reply}"`;
+    box.textContent = t("settings.provider.testOk", { model: s.model, reply });
   } catch (err) {
     box.className = "test-result err";
     box.textContent = String(err);
@@ -1314,33 +1505,34 @@ async function testConnection() {
 /* ══════════════════════════ Updates ══════════════════════════ */
 
 async function checkForUpdates({ silent }) {
-  const status = $("update-status");
-  const setStatus = (t) => {
-    if (status) status.textContent = t;
+  const setStatus = (render) => {
+    renderUpdateStatus = render;
+    const status = $("update-status");
+    if (status) status.textContent = render();
   };
 
   try {
     const { check } = await import("@tauri-apps/plugin-updater");
-    setStatus("Checking…");
+    setStatus(() => t("settings.updates.checking"));
     const update = await check();
 
     if (!update) {
-      setStatus("You are on the latest version.");
-      if (!silent) toast("Screenshotify is up to date.", { kind: "ok" });
+      setStatus(() => t("settings.updates.upToDate"));
+      if (!silent) toast(t("settings.updates.upToDateToast"), { kind: "ok" });
       return;
     }
 
-    setStatus(`Version ${update.version} available.`);
-    toast(`Screenshotify ${update.version} is available.`, {
+    setStatus(() => t("settings.updates.available", { version: update.version }));
+    toast(t("settings.updates.availableToast", { version: update.version }), {
       kind: "info",
       timeout: 20000,
       action: {
-        label: "Install and restart",
+        label: t("settings.updates.install"),
         onClick: async () => {
           let total = 0;
           let downloaded = 0;
           try {
-            setStatus("Downloading…");
+            setStatus(() => t("settings.updates.downloading"));
             await update.downloadAndInstall((event) => {
               switch (event.event) {
                 case "Started":
@@ -1349,10 +1541,12 @@ async function checkForUpdates({ silent }) {
                   break;
                 case "Progress":
                   downloaded += event.data.chunkLength;
-                  setStatus(
+                  setStatus(() =>
                     total
-                      ? `Downloading… ${Math.min(100, Math.round((downloaded / total) * 100))}%`
-                      : "Downloading…",
+                      ? t("settings.updates.downloadingPct", {
+                          pct: Math.min(100, Math.round((downloaded / total) * 100)),
+                        })
+                      : t("settings.updates.downloading"),
                   );
                   break;
                 case "Finished":
@@ -1361,24 +1555,60 @@ async function checkForUpdates({ silent }) {
                   // the download half is done and the silent install (plus
                   // whatever the OS does to an unsigned exe, e.g. a Defender
                   // reputation check) is what's actually still running.
-                  setStatus("Installing…");
+                  setStatus(() => t("settings.updates.installing"));
                   break;
               }
             });
             const { relaunch } = await import("@tauri-apps/plugin-process");
             await relaunch();
           } catch (err) {
-            setStatus(`Update failed: ${err}`);
-            toast(`Update failed: ${err}`, { kind: "err" });
+            setStatus(() => t("settings.updates.failed", { error: err }));
+            toast(t("settings.updates.failed", { error: err }), { kind: "err" });
           }
         },
       },
     });
   } catch (err) {
     // Unsigned local builds have no updater key configured; that is expected.
-    setStatus(silent ? "" : `Update check failed: ${err}`);
-    if (!silent) toast(`Update check failed: ${err}`, { kind: "err", timeout: 9000 });
+    setStatus(() => (silent ? "" : t("settings.updates.checkFailed", { error: err })));
+    if (!silent) toast(t("settings.updates.checkFailed", { error: err }), { kind: "err", timeout: 9000 });
   }
+}
+
+/* ══════════════════════════ Locale ══════════════════════════ */
+
+/**
+ * Re-renders whatever #update-status last showed (checking/up to date/failed/
+ * …), set by checkForUpdates each time it changes the text. checkForUpdates
+ * itself isn't re-run on a language change — only its already-known result is
+ * re-worded — so switching languages never fires an update check as a side
+ * effect.
+ */
+let renderUpdateStatus = () => "";
+
+/**
+ * Everything that isn't covered by i18n.js's own data-i18n DOM walk: list
+ * rows built at runtime, the custom .csel dropdowns whose option labels were
+ * copied out of the native <select> once at build time, and one-shot status
+ * text set by an async action (API key check, update check) that isn't
+ * re-run just because the language changed.
+ */
+function initLocaleSync() {
+  onLocaleChange(() => {
+    applyPlatformCopy();
+    renderWatchPill();
+    refreshSidebarLabels();
+    for (const refresh of enhancedSelectRefreshers) refresh();
+    renderUsage();
+    renderFolders();
+    refreshReviewLocale();
+    refreshHistoryLocale();
+    historyDateFilter?.refreshLocale();
+    applyHistoryFilter();
+    renderKeyStatus();
+    const updateStatusEl = $("update-status");
+    if (updateStatusEl) updateStatusEl.textContent = renderUpdateStatus();
+  });
 }
 
 /* ══════════════════════════ Go ══════════════════════════ */
@@ -1386,5 +1616,5 @@ async function checkForUpdates({ silent }) {
 main().catch((err) => {
   console.error(err);
   document.body.innerHTML =
-    `<div style="padding:40px;font:14px system-ui">Screenshotify failed to start.<br><br><pre>${String(err)}</pre></div>`;
+    `<div style="padding:40px;font:14px system-ui">${t("app.startFailed")}<br><br><pre>${String(err)}</pre></div>`;
 });

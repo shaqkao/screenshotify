@@ -21,6 +21,7 @@ export const DEFAULTS = {
   datePrefix: "none",
   maxWords: 6,
   language: "English",
+  uiLanguage: "en",
   promptExtra: "",
   concurrency: 2,
   maxEdge: 1024,

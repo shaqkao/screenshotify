@@ -1,5 +1,6 @@
 mod ai;
 mod files;
+mod github;
 mod imaging;
 mod secrets;
 mod toast;
@@ -163,6 +164,24 @@ async fn thumbnail(path: String, max_edge: u32) -> Result<String, String> {
     .map_err(|e| format!("Preview failed: {e}"))?
 }
 
+/// Copies the full-resolution image at `path` to the OS clipboard, so it can
+/// be pasted elsewhere — the thumbnail shown in the list is a downscaled
+/// preview and is never what gets copied.
+#[tauri::command]
+async fn copy_image_to_clipboard(app: AppHandle, path: String) -> Result<(), String> {
+    use tauri_plugin_clipboard_manager::ClipboardExt;
+
+    let (rgba, width, height) =
+        tauri::async_runtime::spawn_blocking(move || imaging::decode_rgba(Path::new(&path)))
+            .await
+            .map_err(|e| format!("Copy failed: {e}"))??;
+
+    let image = tauri::image::Image::new(&rgba, width, height);
+    app.clipboard()
+        .write_image(&image)
+        .map_err(|e| format!("Could not copy to the clipboard: {e}"))
+}
+
 #[tauri::command]
 fn rename_file(watch: State<'_, Watch>, path: String, stem: String) -> Result<String, String> {
     let result = files::rename_to_stem(&path, &stem)?;
@@ -290,6 +309,13 @@ async fn test_connection(base_url: String, model: String) -> Result<String, Stri
 #[tauri::command]
 async fn list_models(base_url: String) -> Result<Vec<String>, String> {
     ai::list_models(&base_url).await
+}
+
+/* ══════════════════════════ GitHub ══════════════════════════ */
+
+#[tauri::command]
+async fn repo_stars(owner: String, repo: String) -> Result<u64, String> {
+    github::repo_stars(&owner, &repo).await
 }
 
 /* ══════════════════════════ Watching ══════════════════════════ */
@@ -455,6 +481,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .setup(move |app| {
             let handle = app.handle().clone();
 
@@ -510,6 +537,7 @@ pub fn run() {
             scan_folder,
             scan_files,
             thumbnail,
+            copy_image_to_clipboard,
             rename_file,
             revert_rename,
             open_folder,
@@ -520,6 +548,7 @@ pub fn run() {
             suggest_filename,
             test_connection,
             list_models,
+            repo_stars,
             start_watching,
             stop_watching,
             watched_folders,

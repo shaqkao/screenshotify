@@ -104,6 +104,13 @@ body {
   text-overflow: ellipsis;
 }
 
+.titlebar-version {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
 .titlebar-controls {
   display: flex;
   flex: 0 0 auto;
@@ -830,12 +837,37 @@ main {
   border-bottom: 1px solid var(--border);
 }
 
-.toolbar-left { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.toolbar-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
 
 .history-search {
-  flex: 1 1 630px;
+  flex: 1 1 330px;
   min-width: 330px;
   max-width: 960px;
+}
+
+/* History's toolbar only (Review's plain .toolbar never needs this): once
+   there's no longer room for the count badge next to the search box, JS
+   (initHistoryToolbarWrap in main.js) adds .is-wrapped, which sends the
+   badge to a full-width row of its own below. Doing this with a genuine
+   second flex line — rather than nesting the wrap inside .toolbar-left the
+   way an earlier version of this did — matters because each flex line gets
+   its own independent cross-axis alignment: .toolbar-right's buttons stay
+   centered against the search box specifically, instead of getting centered
+   against the combined height of both rows and drifting upward.
+   Plain CSS flex-wrap can't do this alone and keep the badge in its normal
+   between-the-search-box-and-the-buttons spot: the line-breaking algorithm
+   tests items in source/order sequence, so whichever item is tested right
+   before the badge is the one left stranded on the badge's line if the
+   badge doesn't fit — which would sometimes be the buttons. JS measuring the
+   actual available width sidesteps that. */
+.toolbar-wrap.is-wrapped .search-range-summary {
+  order: 3;
+  flex-basis: 100%;
+}
+
+.toolbar-wrap.is-wrapped {
+  flex-wrap: wrap;
+  row-gap: 6px;
 }
 
 /* Shows a "/" key hint until the field has a value (an empty `required`
@@ -916,6 +948,30 @@ main {
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Bare layout box, not the visible pill: when .toolbar-wrap.is-wrapped gives
+   it flex-basis: 100% to force the line break, that 100%-wide box needs to
+   stay invisible so only .search-range-summary-pill (its child, sized to
+   its own content and left-aligned by this element's default
+   justify-content: flex-start) reads as the badge — otherwise the pill's
+   background/border would stretch across the full row. */
+.search-range-summary {
+  display: flex;
+  flex: none;
+}
+
+.search-range-summary-pill {
+  font-size: 12px;
+  color: var(--text-dim);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 10px;
+  white-space: nowrap;
 }
 
 .search-filter .csel-trigger {
@@ -1038,12 +1094,34 @@ main {
   fill: currentColor;
 }
 
-/* "Scan a folder…" swaps to the open-folder glyph on hover — both paths ship
-   in the same <svg> and toggle via `display` rather than being switched out
-   in JS, since it is a pure hover state with nothing else to track. */
-#btn-scan .icon-folder-open { display: none; }
-#btn-scan:hover .icon-folder-closed { display: none; }
-#btn-scan:hover .icon-folder-open { display: block; }
+/* Any folder-reveal button (Scan a folder, and the icon-only "reveal in
+   folder" buttons on Review/History rows) swaps to the open-folder glyph on
+   hover — both paths ship in the same <svg> and toggle via `display` rather
+   than being switched out in JS, since it is a pure hover state with nothing
+   else to track. */
+.btn-folder-reveal .icon-folder-open { display: none; }
+.btn-folder-reveal:hover .icon-folder-closed { display: none; }
+.btn-folder-reveal:hover .icon-folder-open { display: block; }
+
+/* Compact square icon-only button — the per-row "reveal in folder" buttons,
+   which need to sit next to other small controls (History's Undo/Redo,
+   Review's Retry/Skip/Apply) without a text label competing for space. */
+.btn-icon-only {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.btn-icon-only .btn-icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
 
 .btn-ghost:hover:not(:disabled) {
   background: var(--bg-sunken);
@@ -1051,6 +1129,103 @@ main {
 }
 
 .btn-danger { color: var(--err); }
+
+/* "Star on GitHub" (Settings > Updates) — ported as-is from a Tailwind
+   "rainbow button" component: a slow-scrolling rainbow gradient shows through
+   as the border via a 3-layer stacked background (solid fill clipped to the
+   padding box, a top-down sheen and the rainbow itself both clipped to the
+   border box), plus a soft blurred rainbow glow sitting just under the
+   button via ::before. animation/background-position replaces Tailwind's
+   `animate-rainbow` utility; everything else is a literal translation. */
+@keyframes star-github-rainbow {
+  to { background-position: 200% 0; }
+}
+
+.btn-star-github {
+  position: relative;
+  z-index: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 6px;
+  border: 0.08rem solid transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background-image:
+    linear-gradient(#121213, #121213),
+    linear-gradient(#121213 50%, rgba(18, 18, 19, 0.6) 80%, rgba(18, 18, 19, 0)),
+    linear-gradient(90deg, hsl(0, 100%, 63%), hsl(90, 100%, 63%), hsl(210, 100%, 63%), hsl(195, 100%, 63%), hsl(270, 100%, 63%));
+  background-size: 200% 100%;
+  background-clip: padding-box, border-box, border-box;
+  background-origin: border-box;
+  background-position: 0 0;
+  animation: star-github-rainbow 3s linear infinite;
+  transition: transform 0.2s;
+}
+
+.btn-star-github:hover { transform: scale(1.05); }
+.btn-star-github:active { transform: scale(0.95); }
+
+.btn-star-github:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-elev), 0 0 0 4px var(--accent);
+}
+
+.btn-star-github::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  bottom: -20%;
+  left: 50%;
+  height: 20%;
+  width: 60%;
+  transform: translateX(-50%);
+  background-image: linear-gradient(90deg, hsl(0, 100%, 63%), hsl(90, 100%, 63%), hsl(210, 100%, 63%), hsl(195, 100%, 63%), hsl(270, 100%, 63%));
+  background-size: 200% 100%;
+  filter: blur(0.8rem);
+  animation: star-github-rainbow 3s linear infinite;
+}
+
+.star-github-mark {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin-right: 2px;
+}
+
+.star-github-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.star-github-count svg {
+  width: 16px;
+  height: 16px;
+  fill: #6b7280;
+  transition: fill 0.2s;
+}
+
+.btn-star-github:hover .star-github-count svg { fill: #fde047; }
+
+.star-github-arrow {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  margin-left: 6px;
+  color: var(--text-dim);
+}
 
 /* ─────────────────────────── AI progress ─────────────────────────── */
 /* Only ever shown while queue.remaining() > 0 — i.e. while a suggestion
@@ -1528,6 +1703,10 @@ main {
   display: flex;
   align-items: center;
   gap: 12px;
+  /* Hard floor on the row's own height — independent of whatever thumb-wrap
+     or the text stack end up measuring at, so this can't collapse back down
+     to a thin, "flat" strip. */
+  min-height: 96px;
   background: var(--bg-elev);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1540,6 +1719,7 @@ main {
 
 .hrow-to {
   font-weight: 600;
+  line-height: 1.5;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1547,6 +1727,7 @@ main {
 
 .hrow-from {
   font-size: 11.5px;
+  line-height: 1.5;
   color: var(--text-faint);
   white-space: nowrap;
   overflow: hidden;
@@ -1557,6 +1738,7 @@ main {
 
 .hrow-info {
   font-size: 11.5px;
+  line-height: 1.5;
   color: var(--text-faint);
   white-space: nowrap;
   overflow: hidden;
@@ -1566,23 +1748,35 @@ main {
 
 .hrow-info:empty { display: none; }
 
+/* Groups the reveal-in-folder button with Undo/Redo so .hrow-foot (and its
+   grid-mode `justify-content: space-between`, see below) keeps treating the
+   footer as just two things — time on one side, actions on the other —
+   instead of the reveal button drifting off on its own between them. */
+.hrow-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .hrow-time {
   font-size: 11.5px;
   color: var(--text-faint);
   white-space: nowrap;
 }
 
-/* `display: contents` erases this wrapper from the flat list's flex layout,
-   so .hrow-time and the Undo button act as .hrow's own direct children there
-   (unchanged from before the wrapper existed). In the grid/card layout it
-   becomes a real flex row, putting the two on one line at the card's foot. */
-.hrow-foot { display: contents; }
-
-.list.is-grid .hrow-foot {
+/* A real flex row rather than `display: contents` — contents was tried here
+   to erase this wrapper from the flat list's layout so .hrow-time and the
+   Undo button would act as .hrow's own direct children, but `display:
+   contents` has a real WebView2/Chromium paint-order bug: its children can
+   get drawn in the wrong stacking position relative to sibling rows in a
+   scrolling flex column, showing up as a row's own text bleeding upward
+   into the row above it. A plain flex box avoids that entirely and looks
+   identical here, since .hrow-main's flex: 1 1 auto already pushes this
+   box to the row's right edge either way. */
+.hrow-foot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
+  gap: 10px;
 }
 
 /* ─────────────────────────────── Empty ─────────────────────────────── */
@@ -1726,6 +1920,20 @@ main {
   font-size: 12.5px;
   margin: 2px 0 16px;
 }
+
+/* Settings > Updates: version/license text on the left, the "Star on GitHub"
+   button on the right — kept as a flex row instead of letting the button sit
+   inline in the middle of the hint text, which read as cramped and
+   misaligned given how much taller the button is than that small text. */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.card-footer .card-hint { margin: 0; }
 
 .field {
   display: block;
@@ -1910,6 +2118,194 @@ select { cursor: pointer; }
 .csel-option[aria-selected="true"] {
   color: var(--accent);
   font-weight: 600;
+}
+
+/* History's date-range popover (src/datefilter.js): a preset row above a
+   single-month calendar, built into the same .csel-panel shell used
+   elsewhere so it inherits the open/close + click-outside mechanics. */
+.search-filter .csel-panel.date-filter-panel {
+  width: 264px;
+  min-width: 264px;
+  max-height: none;
+  background-color: #2c2c2c;
+}
+
+.date-filter-presets {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.date-preset-btn {
+  flex: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-faint);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 2px 0 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.date-preset-btn:hover,
+.date-preset-btn:focus-visible {
+  outline: none;
+  color: var(--text);
+}
+
+.date-preset-btn.is-active {
+  color: var(--text);
+  font-weight: 600;
+  border-bottom-color: var(--text);
+}
+
+.date-filter-calendar {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cal-nav {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.cal-nav:hover,
+.cal-nav:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+.cal-weekdays,
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.cal-grid {
+  user-select: none;
+}
+
+.cal-weekdays span {
+  display: block;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-faint);
+  padding-bottom: 4px;
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cal-day:hover,
+.cal-day:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.cal-day.is-outside {
+  color: var(--text-faint);
+  opacity: 0.5;
+}
+
+.cal-day.is-today {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.cal-day.is-in-range {
+  border-radius: 0;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.cal-day.is-range-start,
+.cal-day.is-range-end {
+  background: var(--accent);
+  color: var(--bg-elev);
+  font-weight: 600;
+}
+
+.cal-day.is-range-start { border-radius: 6px 0 0 6px; }
+.cal-day.is-range-end { border-radius: 0 6px 6px 0; }
+.cal-day.is-range-start.is-range-end { border-radius: 6px; }
+
+/* Right-click menu on History/Review thumbnails (src/contextmenu.js). Fixed
+   positioning + a shared instance, since at most one can be open at a time. */
+.ctx-menu {
+  position: fixed;
+  z-index: 200;
+  padding: 5px;
+  min-width: 160px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.ctx-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  padding: 7px 9px;
+  cursor: pointer;
+}
+
+.ctx-menu-item:hover,
+.ctx-menu-item:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.ctx-menu-icon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
 }
 
 .key-row {

@@ -10,7 +10,7 @@ Screenshotify sits in the Windows tray or the macOS menu bar, notices new screen
 and asks an AI model of your choosing for a filename that describes what is actually
 on screen. Nothing is renamed until you say so.
 
-### [<img src="https://i.postimg.cc/7ZmVrVZR/windows.png" width="20" valign="middle" alt=""> Download for Windows](https://github.com/shaqkao/screenshotify/releases/latest) · [Download for macOS](https://github.com/shaqkao/screenshotify/releases/latest)
+### [<img src="https://i.postimg.cc/7ZmVrVZR/windows.png" width="20" valign="middle" alt="windows"> Download for Windows](https://github.com/shaqkao/screenshotify/releases/latest) · [<img src="https://i.postimg.cc/T12dBPcb/apple.png" width="20" valign="middle" alt="windows">Download for macOS](https://github.com/shaqkao/screenshotify/releases/latest)
 
 Free · open source · MIT · [bring your own API key](provider.md)
 

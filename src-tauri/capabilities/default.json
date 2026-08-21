@@ -25,6 +25,7 @@
     "notification:default",
     "store:default",
     "autostart:default",
+    "clipboard-manager:allow-write-image",
     "opener:allow-open-url",
     "opener:allow-default-urls",
     "opener:allow-reveal-item-in-dir",

@@ -11,17 +11,21 @@
       <div class="titlebar-brand" data-tauri-drag-region>
         <img class="titlebar-icon" src="./assets/icon.png" alt="" aria-hidden="true" />
         <span class="titlebar-title">Screenshotify</span>
+        <span class="titlebar-version" id="titlebar-version"></span>
       </div>
       <div class="titlebar-controls">
-        <button class="titlebar-btn" id="titlebar-minimize" type="button" title="Minimize" aria-label="Minimize">
+        <button class="titlebar-btn" id="titlebar-minimize" type="button"
+                data-i18n-title="titlebar.minimize" data-i18n-aria-label="titlebar.minimize">
           <svg viewBox="0 -960 960 960" aria-hidden="true"><path d="M217-86v-126h526v126H217Z" /></svg>
         </button>
-        <button class="titlebar-btn" id="titlebar-maximize" type="button" title="Maximize" aria-label="Maximize">
+        <button class="titlebar-btn" id="titlebar-maximize" type="button"
+                data-i18n-title="titlebar.maximize" data-i18n-aria-label="titlebar.maximize">
           <svg id="titlebar-maximize-icon" viewBox="0 -960 960 960" aria-hidden="true">
             <path d="M86-86v-260h126v134h134v126H86Zm529 0v-126h133v-134h126v260H615ZM86-615v-259h260v126H212v133H86Zm662 0v-133H615v-126h259v259H748Z" />
           </svg>
         </button>
-        <button class="titlebar-btn titlebar-btn-close" id="titlebar-close" type="button" title="Close" aria-label="Close">
+        <button class="titlebar-btn titlebar-btn-close" id="titlebar-close" type="button"
+                data-i18n-title="titlebar.close" data-i18n-aria-label="titlebar.close">
           <svg viewBox="0 -960 960 960" aria-hidden="true">
             <path d="m256-168-88-88 224-224-224-224 88-88 224 224 224-224 88 88-224 224 224 224-88 88-224-224-224 224Z" />
           </svg>
@@ -32,7 +36,7 @@
     <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
-        <button class="brand-badge" id="sidebar-toggle" type="button" title="Collapse sidebar">
+        <button class="brand-badge" id="sidebar-toggle" type="button" data-i18n-title="sidebar.collapse">
           <img class="brand-mark" src="./assets/icon.png" alt="" aria-hidden="true" />
           <svg class="brand-toggle-icon brand-toggle-close" viewBox="0 -960 960 960" aria-hidden="true">
             <path d="M648-324v-312L480-480l168 156ZM211-144q-27.64 0-47.32-19.68T144-211v-538q0-27.64 19.68-47.32T211-816h538q27.64 0 47.32 19.68T816-749v538q0 27.64-19.68 47.32T749-144H211Zm197-72h336v-528H408v528Z" />
@@ -49,7 +53,7 @@
         </span>
       </div>
 
-      <span class="tabs-label">Menu</span>
+      <span class="tabs-label" data-i18n="sidebar.menu">Menu</span>
 
       <nav class="tabs" role="tablist">
         <span class="tab-pill" aria-hidden="true"></span>
@@ -64,7 +68,7 @@
               <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
             </g>
           </svg>
-          <span class="tab-label">Review</span> <span class="badge" id="tab-badge" hidden>0</span>
+          <span class="tab-label" data-i18n="tabs.review">Review</span> <span class="badge" id="tab-badge" hidden>0</span>
         </button>
         <button class="tab" role="tab" data-view="history">
           <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -72,7 +76,7 @@
             <line class="tab-icon-clock-hour" x1="12" y1="12" x2="16" y2="14" />
             <line class="tab-icon-clock-minute" x1="12" y1="6" x2="12" y2="12" />
           </svg>
-          <span class="tab-label">History</span>
+          <span class="tab-label" data-i18n="tabs.history">History</span>
         </button>
         <button class="tab" role="tab" data-view="settings">
           <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -93,7 +97,7 @@
               <path d="m11 13.73-4 6.93" />
             </g>
           </svg>
-          <span class="tab-label">Settings</span>
+          <span class="tab-label" data-i18n="tabs.settings">Settings</span>
         </button>
       </nav>
 
@@ -101,15 +105,15 @@
         <svg class="sidebar-collapse-icon" id="sidebar-collapse-icon" viewBox="0 -960 960 960" aria-hidden="true">
           <path d="M648-324v-312L480-480l168 156ZM211-144q-27.64 0-47.32-19.68T144-211v-538q0-27.64 19.68-47.32T211-816h538q27.64 0 47.32 19.68T816-749v538q0 27.64-19.68 47.32T749-144H211Zm197-72h336v-528H408v528Z" />
         </svg>
-        <span class="tab-label" id="sidebar-collapse-label">Collapse sidebar</span>
+        <span class="tab-label" id="sidebar-collapse-label" data-i18n="sidebar.collapse">Collapse sidebar</span>
       </button>
 
       <div class="sidebar-spacer"></div>
 
-      <button class="watch-pill" id="watch-toggle" title="Toggle folder watching">
+      <button class="watch-pill" id="watch-toggle" data-i18n-title="watch.toggleTitle">
         <div class="watch-fabric"></div>
         <div class="watch-ring"></div>
-        <span id="watch-label">Watching</span>
+        <span id="watch-label" data-i18n="watch.watching">Watching</span>
         <div class="watch-shadow left"></div>
         <div class="watch-shadow right"></div>
         <div class="watch-dot" id="watch-dot"></div>
@@ -148,7 +152,7 @@
       <section class="view is-active" id="view-review">
         <div class="toolbar">
           <div class="toolbar-left">
-            <button class="btn btn-primary btn-icon-label" id="btn-scan">
+            <button class="btn btn-primary btn-icon-label btn-folder-reveal" id="btn-scan">
               <svg class="btn-icon" viewBox="0 -960 960 960" aria-hidden="true">
                 <path
                   class="icon-folder-closed"
@@ -159,7 +163,7 @@
                   d="M168-192q-32 0-52-21t-20-51v-432q0-30 20-51t52-21h216l96 96h313q31 0 50.5 21t21.5 51H168v336l78-264h690l-85 285q-8 23-21 37t-38 14H168Z"
                 />
               </svg>
-              Scan a folder…
+              <span data-i18n="review.scanFolder">Scan a folder…</span>
             </button>
             <button class="btn btn-icon-label" id="btn-pick-files">
               <svg class="btn-icon" viewBox="0 -960 960 960" aria-hidden="true">
@@ -167,14 +171,14 @@
                   d="M850-96 744-202v82h-72v-205h205v72h-83l106 106-50 51ZM528-637h168L528-805v168ZM264-109q-29.7 0-50.85-21.15Q192-151.3 192-181v-624q0-29.7 21.15-50.85Q234.3-877 264-877h312l192 192v288H600v288H264Z"
                 />
               </svg>
-              Choose files…
+              <span data-i18n="review.chooseFiles">Choose files…</span>
             </button>
-            <button class="btn" id="btn-retry-failed" hidden>Retry failed</button>
+            <button class="btn" id="btn-retry-failed" hidden data-i18n="review.retryFailed">Retry failed</button>
           </div>
           <div class="toolbar-right">
             <span class="muted" id="queue-status"></span>
-            <button class="btn" id="btn-clear">Clear list</button>
-            <button class="btn btn-primary" id="btn-apply-all" disabled>Apply all</button>
+            <button class="btn" id="btn-clear" data-i18n="review.clearList">Clear list</button>
+            <button class="btn btn-primary" id="btn-apply-all" disabled data-i18n="review.applyAll">Apply all</button>
           </div>
         </div>
 
@@ -183,13 +187,13 @@
         <div class="ai-progress" id="ai-progress" hidden>
           <i class="spinner"></i>
           <span id="ai-progress-text"></span>
-          <button class="btn btn-sm" id="btn-cancel-scan">Cancel</button>
+          <button class="btn btn-sm" id="btn-cancel-scan" data-i18n="review.cancel">Cancel</button>
         </div>
 
         <div class="empty" id="review-empty">
           <div class="empty-text">
-            <h2>No screenshots waiting</h2>
-            <p id="empty-hint">
+            <h2 data-i18n="review.emptyTitle">No screenshots waiting</h2>
+            <p id="empty-hint" data-i18n="watch.hintOn">
               Screenshotify is watching your screenshot folders. Take a screenshot and a
               suggested name will show up here.
             </p>
@@ -199,27 +203,22 @@
 
       <!-- ───────────────────────── History ───────────────────────── -->
       <section class="view" id="view-history">
-        <div class="toolbar">
+        <div class="toolbar toolbar-wrap" id="history-toolbar">
           <div class="toolbar-left">
             <label class="search-label history-search">
               <input type="text" id="history-search" required
-                     placeholder="Search filenames…" spellcheck="false" autocomplete="off" />
+                     data-i18n-placeholder="history.searchPlaceholder" spellcheck="false" autocomplete="off" />
               <div class="search-filter">
                 <div class="csel">
-                  <input type="checkbox" class="csel-toggle" id="csel-toggle-history-status" />
-                  <label class="csel-trigger" for="csel-toggle-history-status"
-                         id="history-filter-trigger" title="Filter by status">
+                  <input type="checkbox" class="csel-toggle" id="csel-toggle-history-time" />
+                  <label class="csel-trigger" for="csel-toggle-history-time"
+                         id="history-time-filter-trigger" data-i18n-title="history.timeFilterTitle">
                     <span class="csel-value" hidden></span>
                     <svg viewBox="0 -960 960 960" aria-hidden="true">
-                      <path d="M456.18-192Q446-192 439-198.9t-7-17.1v-227L197-729q-9-12-2.74-25.5Q200.51-768 216-768h528q15.49 0 21.74 13.5Q772-741 763-729L528-443v227q0 10.2-6.88 17.1-6.89 6.9-17.06 6.9h-47.88Z" />
+                      <path d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Z" />
                     </svg>
                   </label>
-                  <div class="csel-panel"></div>
-                  <select id="history-status-filter" class="csel-native">
-                    <option value="all">All</option>
-                    <option value="active">Renamed</option>
-                    <option value="undone">Undone</option>
-                  </select>
+                  <div class="csel-panel date-filter-panel"></div>
                 </div>
               </div>
               <svg class="search-icon" viewBox="0 0 56.966 56.966" aria-hidden="true">
@@ -228,9 +227,12 @@
               </svg>
             </label>
           </div>
+          <span class="search-range-summary" id="history-range-summary" hidden>
+            <span class="search-range-summary-pill" id="history-range-summary-text"></span>
+          </span>
           <div class="toolbar-right">
-            <button class="btn" id="btn-undo-last">Undo last batch</button>
-            <button class="btn" id="btn-clear-history">Clear history</button>
+            <button class="btn" id="btn-undo-last" data-i18n="history.undoLastBatch">Undo last batch</button>
+            <button class="btn" id="btn-clear-history" data-i18n="history.clearHistory">Clear history</button>
           </div>
         </div>
         <div class="list" id="history-list"></div>
@@ -248,48 +250,44 @@
               <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
                 <path d="M264-96v-175q-57-48-88.5-115.57T144-529q0-139.58 98.29-237.29Q340.58-864 481-864q109 0 196 58.5T792-653l66 223q5 17.48-5.5 31.74Q842-384 824-384h-56v120q0 29.7-21.15 50.85Q725.7-192 696-192h-96v96H264Zm138.14-276q37.86 0 63.93-26.12l143.86-144.11Q636-568.34 636-606.17T609.86-670q-26.14-26-64-26T482-670q-32-11-63.5-6.5T361-646q-25 25-30 56.5t7 63.5q-26 26.18-26 64.09Q312-424 338.14-398t64 26Z" />
               </svg>
-              AI provider
+              <span data-i18n="settings.provider.title">AI provider</span>
             </legend>
-            <p class="card-hint">
-              Any OpenAI-compatible endpoint that accepts image input: OpenAI,
-              OpenRouter, Ollama, LM Studio, vLLM, and others. Your key is stored
-              in the <span id="copy-key-store">Windows Credential Manager</span>, never in
-              plain text.
-            </p>
+            <p class="card-hint" id="provider-hint"></p>
 
             <p class="card-hint">
-              Don't have a key yet? <a href="#" id="link-provider-guide">See where to get free AI access</a>.
+              <span data-i18n="settings.provider.noKeyLead">Don't have a key yet?</span>
+              <a href="#" id="link-provider-guide" data-i18n="settings.provider.noKeyLink">See where to get free AI access.</a>
             </p>
 
             <label class="field">
-              <span class="field-label">Base URL</span>
+              <span class="field-label" data-i18n="settings.provider.baseUrl">Base URL</span>
               <input type="text" id="set-base-url" spellcheck="false"
                      placeholder="https://api.openai.com/v1" />
-              <span class="field-hint">
+              <span class="field-hint" data-i18n-html="settings.provider.baseUrlHint">
                 Ollama: <code>http://localhost:11434/v1</code> ·
                 LM Studio: <code>http://localhost:1234/v1</code>
               </span>
             </label>
 
             <label class="field">
-              <span class="field-label">API key</span>
+              <span class="field-label" data-i18n="settings.provider.apiKey">API key</span>
               <span class="key-row">
                 <input type="password" id="set-api-key" spellcheck="false"
                        placeholder="sk-…" autocomplete="off" />
-                <button class="btn btn-sm" id="btn-key-clear" type="button">Remove</button>
+                <button class="btn btn-sm" id="btn-key-clear" type="button" data-i18n="settings.provider.remove">Remove</button>
               </span>
               <span class="field-hint" id="key-status">No key stored.</span>
             </label>
 
             <label class="field">
-              <span class="field-label">Model</span>
+              <span class="field-label" data-i18n="settings.provider.model">Model</span>
               <span class="key-row">
                 <input type="text" id="set-model" spellcheck="false" list="model-list"
                        placeholder="gpt-4o-mini" />
-                <button class="btn btn-sm" id="btn-load-models" type="button">Load models</button>
+                <button class="btn btn-sm" id="btn-load-models" type="button" data-i18n="settings.provider.loadModels">Load models</button>
               </span>
               <datalist id="model-list"></datalist>
-              <span class="field-hint">
+              <span class="field-hint" data-i18n-html="settings.provider.modelHint">
                 Free text — type any model name your endpoint accepts. It must
                 support image input (e.g. <code>gpt-4o-mini</code>,
                 <code>qwen2.5vl</code>, <code>llava</code>).
@@ -297,7 +295,7 @@
             </label>
 
             <div class="field">
-              <button class="btn btn-primary" id="btn-test">Test connection</button>
+              <button class="btn btn-primary" id="btn-test" data-i18n="settings.provider.testConnection">Test connection</button>
               <div class="test-result" id="test-result" hidden></div>
             </div>
           </fieldset>
@@ -307,20 +305,20 @@
               <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
                 <path d="M624-192v-288h144v288H624Zm-216 0v-576h144v576H408Zm-216 0v-384h144v384H192Z" />
               </svg>
-              Usage
+              <span data-i18n="settings.usage.title">Usage</span>
             </legend>
-            <p class="card-hint">
+            <p class="card-hint" data-i18n="settings.usage.hint">
               Every model Screenshotify has actually sent a request to, and how
               many tokens each one has used. Kept on this device only.
             </p>
             <div class="usage-totals" id="usage-totals" hidden>
-              <span><strong id="usage-total-requests">0</strong> requests</span>
-              <span><strong id="usage-total-input">0</strong> input tokens</span>
-              <span><strong id="usage-total-output">0</strong> output tokens</span>
+              <span><strong id="usage-total-requests">0</strong> <span data-i18n="settings.usage.requests">requests</span></span>
+              <span><strong id="usage-total-input">0</strong> <span data-i18n="settings.usage.inputTokens">input tokens</span></span>
+              <span><strong id="usage-total-output">0</strong> <span data-i18n="settings.usage.outputTokens">output tokens</span></span>
             </div>
             <div class="usage-list" id="usage-list"></div>
-            <p class="usage-empty" id="usage-empty">No requests sent yet.</p>
-            <button class="btn btn-sm" id="btn-reset-stats">Reset usage stats</button>
+            <p class="usage-empty" id="usage-empty" data-i18n="settings.usage.empty">No requests sent yet.</p>
+            <button class="btn btn-sm" id="btn-reset-stats" data-i18n="settings.usage.reset">Reset usage stats</button>
           </fieldset>
 
           <fieldset class="card">
@@ -328,15 +326,15 @@
               <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
                 <path d="M168-192q-29 0-50.5-21.5T96-264v-432q0-30 21.5-51t50.5-21h216l96 96h312q30 0 51 21t21 51v336q0 29-21 50.5T792-192H168Z" />
               </svg>
-              Watched folders
+              <span data-i18n="settings.folders.title">Watched folders</span>
             </legend>
-            <p class="card-hint">
+            <p class="card-hint" data-i18n="settings.folders.hint">
               New image files in these folders are picked up automatically.
               Subfolders are included.
             </p>
             <div class="folder-list" id="folder-list"></div>
-            <button class="btn" id="btn-add-folder">Add folder…</button>
-            <button class="btn" id="btn-add-default">Use default Screenshots folder</button>
+            <button class="btn" id="btn-add-folder" data-i18n="settings.folders.add">Add folder…</button>
+            <button class="btn" id="btn-add-default" data-i18n="settings.folders.addDefault">Use default Screenshots folder</button>
           </fieldset>
 
           <fieldset class="card">
@@ -344,11 +342,11 @@
               <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
                 <path d="M168-96q-29.7 0-50.85-21.15Q96-138.3 96-168v-432q0-29.7 21.15-50.85Q138.3-672 168-672h216v-120q0-29.7 21.15-50.85Q426.3-864 456-864h48q29.7 0 50.85 21.15Q576-821.7 576-792v120h216q29.7 0 50.85 21.15Q864-629.7 864-600v432q0 29.7-21.15 50.85Q821.7-96 792-96H168Zm72-144h240v-23q0-17.63-9.5-32.67Q461-310.7 444-319q-20-8-40.5-12.5T360-336q-23 0-43.5 4.5T276-318.53q-17 7.53-26.5 22.66Q240-280.74 240-263v23Zm336-48h144v-72H576v72Zm-173.5-89.5Q420-395 420-420t-17.5-42.5Q385-480 360-480t-42.5 17.5Q300-445 300-420t17.5 42.5Q335-360 360-360t42.5-17.5ZM576-408h144v-72H576v72ZM456-600h48v-192h-48v192Z" />
               </svg>
-              Naming
+              <span data-i18n="settings.naming.title">Naming</span>
             </legend>
 
             <div class="field">
-              <span class="field-label">Filename style</span>
+              <span class="field-label" data-i18n="settings.naming.filenameStyle">Filename style</span>
               <div class="csel">
                 <input type="checkbox" class="csel-toggle" id="csel-toggle-case-style" />
                 <label class="csel-trigger" for="csel-toggle-case-style">
@@ -359,17 +357,17 @@
                 </label>
                 <div class="csel-panel"></div>
                 <select id="set-case-style" class="csel-native">
-                  <option value="kebab">kebab-case — my-screenshot</option>
-                  <option value="snake">snake_case — my_screenshot</option>
-                  <option value="space">Spaces — my screenshot</option>
-                  <option value="title">Title Case — My Screenshot</option>
-                  <option value="camel">camelCase — myScreenshot</option>
+                  <option value="kebab" data-i18n="settings.naming.styleKebab">kebab-case — my-screenshot</option>
+                  <option value="snake" data-i18n="settings.naming.styleSnake">snake_case — my_screenshot</option>
+                  <option value="space" data-i18n="settings.naming.styleSpace">Spaces — my screenshot</option>
+                  <option value="title" data-i18n="settings.naming.styleTitle">Title Case — My Screenshot</option>
+                  <option value="camel" data-i18n="settings.naming.styleCamel">camelCase — myScreenshot</option>
                 </select>
               </div>
             </div>
 
             <div class="field">
-              <span class="field-label">Date prefix</span>
+              <span class="field-label" data-i18n="settings.naming.datePrefix">Date prefix</span>
               <div class="csel">
                 <input type="checkbox" class="csel-toggle" id="csel-toggle-date-prefix" />
                 <label class="csel-trigger" for="csel-toggle-date-prefix">
@@ -380,32 +378,33 @@
                 </label>
                 <div class="csel-panel"></div>
                 <select id="set-date-prefix" class="csel-native">
-                  <option value="none">None</option>
+                  <option value="none" data-i18n="settings.naming.dateNone">None</option>
                   <option value="dash">2026-08-12-name</option>
                   <option value="compact">20260812-name</option>
                   <option value="datetime">2026-08-12-1435-name</option>
                 </select>
               </div>
-              <span class="field-hint">Uses the file's creation time, not today's date.</span>
+              <span class="field-hint" data-i18n="settings.naming.dateHint">Uses the file's creation time, not today's date.</span>
             </div>
 
             <label class="field">
-              <span class="field-label">Maximum words</span>
+              <span class="field-label" data-i18n="settings.naming.maxWords">Maximum words</span>
               <div class="field-suffix">
                 <input type="text" id="set-max-words" inputmode="numeric" pattern="[0-9]*" maxlength="2"
                   spellcheck="false" />
-                <span>words</span>
+                <span data-i18n="settings.naming.words">words</span>
               </div>
             </label>
 
             <label class="field">
-              <span class="field-label">Description language</span>
+              <span class="field-label" data-i18n="settings.naming.language">Description language</span>
               <input type="text" id="set-language" placeholder="English" spellcheck="false" />
             </label>
 
             <label class="field">
-              <span class="field-label">Extra instructions for the model (optional)</span>
+              <span class="field-label" data-i18n="settings.naming.promptExtra">Extra instructions for the model (optional)</span>
               <textarea id="set-prompt-extra" rows="3"
+                data-i18n-placeholder="settings.naming.promptExtraPlaceholder"
                 placeholder="e.g. Always mention the app or website name if it is visible."></textarea>
             </label>
           </fieldset>
@@ -415,11 +414,29 @@
               <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
                 <path d="M168-264q-29.7 0-50.85-21.15Q96-306.3 96-336v-408q0-29.7 21.15-50.85Q138.3-816 168-816h624q29.7 0 50.85 21.15Q864-773.7 864-744v408q0 29.7-21.15 50.85Q821.7-264 792-264H168ZM48-144v-72h864v72H48Z" />
               </svg>
-              Behaviour
+              <span data-i18n="settings.behaviour.title">Behaviour</span>
             </legend>
 
             <div class="field">
-              <span class="field-label">Photos per row</span>
+              <span class="field-label" data-i18n="settings.behaviour.uiLanguage">Interface language</span>
+              <div class="csel">
+                <input type="checkbox" class="csel-toggle" id="csel-toggle-ui-language" />
+                <label class="csel-trigger" for="csel-toggle-ui-language">
+                  <span class="csel-value"></span>
+                  <svg class="csel-arrow" viewBox="0 -960 960 960" aria-hidden="true">
+                    <path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z" />
+                  </svg>
+                </label>
+                <div class="csel-panel"></div>
+                <select id="set-ui-language" class="csel-native">
+                  <option value="en">English</option>
+                  <option value="zh-TW">繁體中文</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="field-label" data-i18n="settings.behaviour.photosPerRow">Photos per row</span>
               <div class="csel">
                 <input type="checkbox" class="csel-toggle" id="csel-toggle-list-columns" />
                 <label class="csel-trigger" for="csel-toggle-list-columns">
@@ -430,25 +447,25 @@
                 </label>
                 <div class="csel-panel"></div>
                 <select id="set-list-columns" class="csel-native">
-                  <option value="1">1 — list</option>
+                  <option value="1" data-i18n="settings.behaviour.photosPerRowList">1 — list</option>
                   <option value="2">2</option>
                   <option value="3">3</option>
                 </select>
               </div>
-              <span class="field-hint">Applies to both the Review and History lists.</span>
+              <span class="field-hint" data-i18n="settings.behaviour.photosPerRowHint">Applies to both the Review and History lists.</span>
             </div>
 
             <label class="check">
               <input type="checkbox" id="set-watch-enabled" />
               <div class="checkmark"></div>
-              <span>Watch folders for new screenshots</span>
+              <span data-i18n="settings.behaviour.watchEnabled">Watch folders for new screenshots</span>
             </label>
 
             <label class="check">
               <input type="checkbox" id="set-notifications" />
               <div class="checkmark"></div>
-              <span>Show a notification when a suggestion is ready
-                <small>Click the notification to open the review panel.</small></span>
+              <span><span data-i18n="settings.behaviour.notifications">Show a notification when a suggestion is ready</span>
+                <small data-i18n="settings.behaviour.notificationsHint">Click the notification to open the review panel.</small></span>
             </label>
 
             <label class="check">
@@ -470,20 +487,20 @@
             </label>
 
             <label class="field">
-              <span class="field-label">Parallel requests</span>
+              <span class="field-label" data-i18n="settings.behaviour.concurrency">Parallel requests</span>
               <input type="text" id="set-concurrency" inputmode="numeric" pattern="[0-9]*" maxlength="2"
                 spellcheck="false" />
-              <span class="field-hint">Lower this if your provider rate-limits you.</span>
+              <span class="field-hint" data-i18n="settings.behaviour.concurrencyHint">Lower this if your provider rate-limits you.</span>
             </label>
 
             <label class="field">
-              <span class="field-label">Image sent to the model</span>
+              <span class="field-label" data-i18n="settings.behaviour.maxEdge">Image sent to the model</span>
               <div class="field-suffix">
                 <input type="text" id="set-max-edge" inputmode="numeric" pattern="[0-9]*" maxlength="4"
                   spellcheck="false" />
-                <span>px longest edge</span>
+                <span data-i18n="settings.behaviour.maxEdgeSuffix">px longest edge</span>
               </div>
-              <span class="field-hint">
+              <span class="field-hint" data-i18n="settings.behaviour.maxEdgeHint">
                 Screenshots are downscaled before upload to cut cost and latency.
                 Raise this if small text in your screenshots matters.
               </span>
@@ -495,19 +512,37 @@
               <svg class="card-icon" viewBox="0 -960 960 960" aria-hidden="true">
                 <path d="M480-144q-70 0-131.13-26.6-61.14-26.6-106.4-71.87-45.27-45.26-71.87-106.4Q144-410 144-480t26.6-131.13q26.6-61.14 71.87-106.4 45.26-45.27 106.4-71.87Q410-816 480-816q81 0 149.5 35T744-686v-130h72v240H576v-72h107q-35.91-44.8-88.45-70.4Q542-744 480-744q-109 0-186.5 77.5T216-480q0 109 77.5 186.5T480-216q109 0 186.5-77.5T744-480h72q0 140-98 238t-238 98Zm100-200L444-480v-192h72v162l115 115-51 51Z" />
               </svg>
-              Updates
+              <span data-i18n="settings.updates.title">Updates</span>
             </legend>
             <label class="check">
               <input type="checkbox" id="set-auto-update" />
               <div class="checkmark"></div>
-              <span>Check for updates automatically on launch</span>
+              <span data-i18n="settings.updates.autoCheck">Check for updates automatically on launch</span>
             </label>
             <div class="field">
-              <button class="btn" id="btn-check-update">Check for updates now</button>
+              <button class="btn" id="btn-check-update" data-i18n="settings.updates.checkNow">Check for updates now</button>
               <span class="muted" id="update-status"></span>
             </div>
-            <p class="card-hint">Screenshotify <span id="app-version">…</span> · MIT licensed ·
-              <a href="#" id="link-repo">github.com/shaqkao/screenshotify</a></p>
+            <div class="card-footer">
+              <p class="card-hint">Screenshotify <span id="app-version">…</span>
+                <span data-i18n="settings.updates.footerSuffix">· MIT licensed</span></p>
+              <button class="btn-star-github" id="btn-star-github" type="button">
+                <svg class="star-github-mark" viewBox="0 0 438.549 438.549" aria-hidden="true">
+                  <path fill="currentColor" d="M409.132 114.573c-19.608-33.596-46.205-60.194-79.798-79.8-33.598-19.607-70.277-29.408-110.063-29.408-39.781 0-76.472 9.804-110.063 29.408-33.596 19.605-60.192 46.204-79.8 79.8C9.803 148.168 0 184.854 0 224.63c0 47.78 13.94 90.745 41.827 128.906 27.884 38.164 63.906 64.572 108.063 79.227 5.14.954 8.945.283 11.419-1.996 2.475-2.282 3.711-5.14 3.711-8.562 0-.571-.049-5.708-.144-15.417a2549.81 2549.81 0 01-.144-25.406l-6.567 1.136c-4.187.767-9.469 1.092-15.846 1-6.374-.089-12.991-.757-19.842-1.999-6.854-1.231-13.229-4.086-19.13-8.559-5.898-4.473-10.085-10.328-12.56-17.556l-2.855-6.57c-1.903-4.374-4.899-9.233-8.992-14.559-4.093-5.331-8.232-8.945-12.419-10.848l-1.999-1.431c-1.332-.951-2.568-2.098-3.711-3.429-1.142-1.331-1.997-2.663-2.568-3.997-.572-1.335-.098-2.43 1.427-3.289 1.525-.859 4.281-1.276 8.28-1.276l5.708.853c3.807.763 8.516 3.042 14.133 6.851 5.614 3.806 10.229 8.754 13.846 14.842 4.38 7.806 9.657 13.754 15.846 17.847 6.184 4.093 12.419 6.136 18.699 6.136 6.28 0 11.704-.476 16.274-1.423 4.565-.952 8.848-2.383 12.847-4.285 1.713-12.758 6.377-22.559 13.988-29.41-10.848-1.14-20.601-2.857-29.264-5.14-8.658-2.286-17.605-5.996-26.835-11.14-9.235-5.137-16.896-11.516-22.985-19.126-6.09-7.614-11.088-17.61-14.987-29.979-3.901-12.374-5.852-26.648-5.852-42.826 0-23.035 7.52-42.637 22.557-58.817-7.044-17.318-6.379-36.732 1.997-58.24 5.52-1.715 13.706-.428 24.554 3.853 10.85 4.283 18.794 7.952 23.84 10.994 5.046 3.041 9.089 5.618 12.135 7.708 17.705-4.947 35.976-7.421 54.818-7.421s37.117 2.474 54.823 7.421l10.849-6.849c7.419-4.57 16.18-8.758 26.262-12.565 10.088-3.805 17.802-4.853 23.134-3.138 8.562 21.509 9.325 40.922 2.279 58.24 15.036 16.18 22.559 35.787 22.559 58.817 0 16.178-1.958 30.497-5.853 42.966-3.9 12.471-8.941 22.457-15.125 29.979-6.191 7.521-13.901 13.85-23.131 18.986-9.232 5.14-18.182 8.85-26.84 11.136-8.662 2.286-18.415 4.004-29.263 5.146 9.894 8.562 14.842 22.077 14.842 40.539v60.237c0 3.422 1.19 6.279 3.572 8.562 2.379 2.279 6.136 2.95 11.276 1.995 44.163-14.653 80.185-41.062 108.068-79.226 27.88-38.161 41.825-81.126 41.825-128.906-.01-39.771-9.818-76.454-29.414-110.049z" />
+                </svg>
+                <span data-i18n="settings.updates.starOnGithub">Star on GitHub</span>
+                <span class="star-github-count">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" />
+                  </svg>
+                  <span id="repo-star-count">–</span>
+                </span>
+                <svg class="star-github-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M7 17 17 7M17 7H7m10 0v10" />
+                </svg>
+              </button>
+            </div>
           </fieldset>
         </div>
       </section>

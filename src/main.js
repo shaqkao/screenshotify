@@ -91,7 +91,12 @@ async function main() {
   $("app-version").textContent = `v${appVersion}`;
   $("titlebar-version").textContent = `v${appVersion}`;
 
-  if (getSettings().autoUpdate) {
+  // MSIX/Store installs are serviced by Windows itself — the self-updater
+  // UI and its checks don't apply, so hide the whole card rather than let
+  // "Check for updates" fail against a package it can't replace in place.
+  if (await invoke("is_packaged")) {
+    $("updates-card").hidden = true;
+  } else if (getSettings().autoUpdate) {
     // Never block startup on the network.
     setTimeout(() => checkForUpdates({ silent: true }), 4000);
   }
@@ -363,6 +368,8 @@ function initBackendEvents() {
       item &&
       item.status === "ready" &&
       item.source === "watch" &&
+      !item.edited &&
+      !getSettings().autoApplySuggestion &&
       !notifiedIds.has(item.id)
     ) {
       notifiedIds.add(item.id);

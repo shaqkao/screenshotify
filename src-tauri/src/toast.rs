@@ -40,8 +40,38 @@ pub fn notify_review_ready(app: AppHandle, names: Vec<String>) -> Result<(), Str
 mod imp {
     use tauri::{AppHandle, Emitter};
     use tauri_winrt_notification::Toast;
+    use windows::core::PWSTR;
+    use windows::Win32::Foundation::{ERROR_INSUFFICIENT_BUFFER, ERROR_SUCCESS};
+    use windows::Win32::Storage::Packaging::Appx::GetCurrentApplicationUserModelId;
+
+    /// The AUMID Windows assigns this process under an MSIX package identity,
+    /// or `None` outside of one. `CreateToastNotifierWithId` only accepts an
+    /// id belonging to the caller's own package — passing `app.config().identifier`
+    /// (a plain string, not a package identity) makes toasts silently fail to
+    /// show once running as MSIX, so a packaged build must use this instead.
+    fn packaged_app_id() -> Option<String> {
+        let mut len: u32 = 0;
+        // SAFETY: a null buffer with length 0 is the documented way to query
+        // the required buffer size; nothing is written through the pointer.
+        let query = unsafe { GetCurrentApplicationUserModelId(&mut len, PWSTR::null()) };
+        if query != ERROR_INSUFFICIENT_BUFFER {
+            return None; // APPMODEL_ERROR_NO_APPLICATION: not running packaged
+        }
+        let mut buf = vec![0u16; len as usize];
+        // SAFETY: `buf` is sized to the length the query above reported.
+        let result =
+            unsafe { GetCurrentApplicationUserModelId(&mut len, PWSTR(buf.as_mut_ptr())) };
+        if result != ERROR_SUCCESS {
+            return None;
+        }
+        buf.pop(); // drop the trailing NUL
+        Some(String::from_utf16_lossy(&buf))
+    }
 
     fn app_id(app: &AppHandle) -> String {
+        if let Some(id) = packaged_app_id() {
+            return id;
+        }
         // Same dev/release split tauri-plugin-notification's desktop backend uses:
         // an unpackaged dev build has no Start Menu shortcut to register a custom
         // AUMID against, so a real identifier here would make the toast silently

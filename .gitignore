@@ -11,6 +11,13 @@ src-tauri/gen/schemas/
 *.key
 *.key.pub
 
+# MSIX packaging — local dev-signing cert and build staging, NEVER commit the cert
+devcert.pfx
+*.pfx
+msix-stage/
+*.msix
+*.msixbundle
+
 # Editors / OS
 .vscode/
 .idea/
@@ -20,3 +27,6 @@ Thumbs.db
 
 # Claude Code local session state
 .claude/
+
+# Windows SDK packages and generated files
+.winapp

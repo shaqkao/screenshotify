@@ -230,7 +230,10 @@ Deliberately left out to keep the first release shippable:
 
 - Managing local models for you (installing, downloading, VRAM detection) —
   point the base URL at Ollama or LM Studio instead
-- Microsoft Store and Mac App Store distribution
+- Mac App Store distribution
+- A live Microsoft Store listing — the app already packages as MSIX (see
+  [docs/MICROSOFT_STORE.md](docs/MICROSOFT_STORE.md)), it just hasn't been
+  submitted through Partner Center yet
 - Notarised macOS builds (they need a paid Apple Developer ID)
 - Linux — the Rust side is `#[cfg]`-gated rather than Windows-only now, but
   nothing there has been built or tested

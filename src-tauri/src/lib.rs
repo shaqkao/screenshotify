@@ -51,6 +51,21 @@ const FILE_MANAGER: &str = "File Explorer";
 #[cfg(not(any(windows, target_os = "macos")))]
 const FILE_MANAGER: &str = "the file manager";
 
+/// True when running with MSIX package identity (Microsoft Store or a
+/// sideloaded MSIX install) — used to hide the self-updater UI, since Store
+/// installs are serviced by Windows itself rather than `tauri-plugin-updater`.
+#[cfg(windows)]
+#[tauri::command]
+fn is_packaged() -> bool {
+    windows::ApplicationModel::Package::Current().is_ok()
+}
+
+#[cfg(not(windows))]
+#[tauri::command]
+fn is_packaged() -> bool {
+    false
+}
+
 #[tauri::command]
 fn platform_info() -> PlatformInfo {
     PlatformInfo {
@@ -531,6 +546,7 @@ pub fn run() {
             show_main_window,
             launched_minimized,
             set_close_to_tray,
+            is_packaged,
             platform_info,
             set_dock_icon,
             default_screenshot_folders,

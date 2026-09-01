@@ -2,10 +2,20 @@
 //! Settings "Star on GitHub" button. No auth needed — the repo is public —
 //! but GitHub rejects requests with no `User-Agent`.
 
+use percent_encoding::{utf8_percent_encode, AsciiSet, NON_ALPHANUMERIC};
 use serde::Deserialize;
 use std::time::Duration;
 
 const USER_AGENT: &str = concat!("Screenshotify/", env!("CARGO_PKG_VERSION"));
+
+/// Unreserved characters (RFC 3986) are left alone; everything else in
+/// `owner`/`repo` — including `/`, `?`, `#` — gets percent-encoded so it can't
+/// reshape the request path or add query parameters.
+const PATH_SEGMENT: &AsciiSet = &NON_ALPHANUMERIC
+    .remove(b'-')
+    .remove(b'_')
+    .remove(b'.')
+    .remove(b'~');
 
 #[derive(Deserialize)]
 struct Repo {
@@ -13,6 +23,8 @@ struct Repo {
 }
 
 pub async fn repo_stars(owner: &str, repo: &str) -> Result<u64, String> {
+    let owner = utf8_percent_encode(owner, PATH_SEGMENT);
+    let repo = utf8_percent_encode(repo, PATH_SEGMENT);
     let url = format!("https://api.github.com/repos/{owner}/{repo}");
 
     let client = reqwest::Client::builder()

@@ -5,6 +5,7 @@ import { sanitizeUserStem } from "./naming.js";
 import { toast } from "./toast.js";
 import { t } from "./i18n.js";
 import { showImageContextMenu } from "./contextmenu.js";
+import { getSettings } from "./settings.js";
 
 /**
  * The review list. Rows are created once per queued file and mutated in place
@@ -59,8 +60,13 @@ export function initReview() {
 
   queue.onQueueChange((type, item) => {
     if (type === "add") addRow(item);
-    else if (type === "update") updateRow(item);
-    else if (type === "remove") dropRow(item);
+    else if (type === "update") {
+      if (item.status === "ready" && !item.edited && getSettings().autoApplySuggestion) {
+        applyOne(item.id);
+      } else {
+        updateRow(item);
+      }
+    } else if (type === "remove") dropRow(item);
     else if (type === "clear") syncAll();
     refreshChrome();
   });

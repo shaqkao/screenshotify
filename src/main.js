@@ -34,6 +34,7 @@ import { toast } from "./toast.js";
 import { initI18n, t, onLocaleChange, localeTag } from "./i18n.js";
 import { showImageContextMenu } from "./contextmenu.js";
 import { initDateRangeFilter } from "./datefilter.js";
+import { sanitizeUserStem } from "./naming.js";
 
 const REPO_URL = "https://github.com/shaqkao/screenshotify";
 const PROVIDER_GUIDE_URL = "https://github.com/shaqkao/screenshotify/blob/master/provider.md";
@@ -883,6 +884,66 @@ function buildHistoryRow(entry) {
   const to = document.createElement("div");
   to.className = "hrow-to";
 
+  const toText = document.createElement("span");
+  toText.className = "hrow-to-text";
+  toText.tabIndex = 0;
+
+  const toInput = document.createElement("input");
+  toInput.className = "hrow-to-input";
+  toInput.type = "text";
+  toInput.spellcheck = false;
+  toInput.hidden = true;
+
+  to.append(toText, toInput);
+
+  // Read the current path fresh at edit time (not captured at row-build
+  // time) — same reasoning as the thumb/reveal handlers below: undo/redo can
+  // repoint this row at a different file without rebuilding it.
+  const beginRename = () => {
+    const currentPath = entry.undone ? entry.from : entry.to;
+    toInput.value = stemOf(basename(currentPath));
+    toText.hidden = true;
+    toInput.hidden = false;
+    toInput.focus();
+    toInput.select();
+  };
+  toText.addEventListener("click", beginRename);
+  toText.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter" || ev.key === " ") {
+      ev.preventDefault();
+      beginRename();
+    }
+  });
+
+  toInput.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+      toInput.blur();
+    } else if (ev.key === "Escape") {
+      ev.preventDefault();
+      toInput.dataset.cancelled = "1";
+      toInput.blur();
+    }
+  });
+  toInput.addEventListener("blur", async () => {
+    const cancelled = toInput.dataset.cancelled === "1";
+    delete toInput.dataset.cancelled;
+    toInput.hidden = true;
+    toText.hidden = false;
+    if (cancelled) return;
+
+    const currentPath = entry.undone ? entry.from : entry.to;
+    const stem = sanitizeUserStem(toInput.value);
+    if (!stem || stem === stemOf(basename(currentPath))) return;
+
+    try {
+      const result = await history.rerename(entry.id, currentPath, stem);
+      if (result) toast(t("history.renamed"), { kind: "ok" });
+    } catch (err) {
+      toast(t("history.renameFailed", { error: err }), { kind: "err" });
+    }
+  });
+
   const from = document.createElement("div");
   from.className = "hrow-from";
   const fromLabel = document.createElement("span");
@@ -958,7 +1019,7 @@ function buildHistoryRow(entry) {
 
   const row = {
     el,
-    refs: { thumb, to, fromLabel, fromName, time, revealBtn, btn, btnIcon, btnLabel },
+    refs: { thumb, toText, toInput, fromLabel, fromName, time, revealBtn, btn, btnIcon, btnLabel },
     thumbCache: new Map(),
   };
   updateHistoryRow(row, entry);
@@ -992,8 +1053,8 @@ function updateHistoryRow(row, entry) {
     }
   }
 
-  refs.to.textContent = basename(currentPath);
-  refs.to.title = currentPath;
+  refs.toText.textContent = basename(currentPath);
+  refs.toText.title = `${currentPath}\n${t("history.renameTitle")}`;
   refs.fromLabel.textContent = t("history.wasLabel");
   refs.fromName.textContent = basename(previousPath);
 
@@ -1003,6 +1064,11 @@ function updateHistoryRow(row, entry) {
 
 function basename(p) {
   return String(p || "").split(/[\\/]/).pop();
+}
+
+/** A filename without its extension, e.g. `stemOf("shot.png")` → `"shot"`. */
+function stemOf(name) {
+  return name.replace(/\.[^./\\]+$/, "");
 }
 
 function relativeTime(ms) {
@@ -1029,6 +1095,8 @@ function refreshHistoryLocale() {
     row.refs.fromLabel.textContent = t("history.wasLabel");
     row.refs.btnLabel.textContent = entry.undone ? t("history.redoBtn") : t("history.undoBtn");
     row.refs.revealBtn.title = t("review.openFolder");
+    const currentPath = entry.undone ? entry.from : entry.to;
+    row.refs.toText.title = `${currentPath}\n${t("history.renameTitle")}`;
   }
   applyHistoryFilter();
 }
@@ -1104,6 +1172,7 @@ async function initSettingsForm() {
   enhanceSelect($("set-list-columns"));
   bindCheck("set-watch-enabled", "watchEnabled", applyWatchState);
   bindCheck("set-notifications", "notifications");
+  bindCheck("set-auto-apply-suggestion", "autoApplySuggestion");
   bindCheck("set-start-minimized", "startMinimized");
   bindCheck("set-close-to-tray", "closeToTray", async () => {
     await invoke("set_close_to_tray", { enabled: getSettings().closeToTray });
@@ -1615,6 +1684,12 @@ function initLocaleSync() {
 
 main().catch((err) => {
   console.error(err);
-  document.body.innerHTML =
-    `<div style="padding:40px;font:14px system-ui">${t("app.startFailed")}<br><br><pre>${String(err)}</pre></div>`;
+  document.body.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.style.cssText = "padding:40px;font:14px system-ui";
+  wrap.append(t("app.startFailed"), document.createElement("br"), document.createElement("br"));
+  const pre = document.createElement("pre");
+  pre.textContent = String(err);
+  wrap.append(pre);
+  document.body.append(wrap);
 });

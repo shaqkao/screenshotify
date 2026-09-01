@@ -96,6 +96,25 @@ export async function redo(id) {
   return entry;
 }
 
+/**
+ * Renames the file at `path` to `stem` and folds the result into the
+ * existing history entry `id`, rather than recording a second, independent
+ * entry for the same file. Two entries for one file would leave the older
+ * one pointing at a `to` path that no longer exists the moment this second
+ * rename lands, breaking its Undo/Redo button. `from` (the true original
+ * name) and the entry's position/timestamp are left untouched either way, so
+ * Undo always still works and the list keeps its original chronological
+ * order instead of jumping this row to the top.
+ */
+export async function rerename(id, path, stem) {
+  const entry = entries.find((e) => e.id === id);
+  if (!entry) return null;
+  entry.to = await invoke("rename_file", { path, stem });
+  entry.undone = false;
+  await persist();
+  return entry;
+}
+
 function basename(p) {
   return String(p || "").split(/[\\/]/).pop();
 }

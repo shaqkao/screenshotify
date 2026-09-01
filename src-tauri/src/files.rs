@@ -1,5 +1,6 @@
 use serde::Serialize;
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Extensions Screenshotify treats as screenshots. Deliberately images only — v1 does
@@ -138,6 +139,16 @@ pub fn entries_for_paths(paths: &[String]) -> Vec<FileEntry> {
         .collect()
 }
 
+/// Serializes the collision-check-then-rename sequence below. Without this,
+/// two renames landing at the same time (e.g. auto-applied AI suggestions for
+/// near-duplicate screenshots resolving concurrently) could both pass the
+/// `exists()` check for the same target before either had renamed into it,
+/// and the second `fs::rename` would then silently overwrite the first.
+fn rename_lock() -> &'static Mutex<()> {
+    static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    LOCK.get_or_init(|| Mutex::new(()))
+}
+
 /// Renames `path` to `stem` + its original extension, in the same folder.
 /// Never overwrites: an existing name gets `-2`, `-3`, … appended.
 /// Returns the path the file ended up at.
@@ -151,6 +162,12 @@ pub fn rename_to_stem(path: &str, stem: &str) -> Result<String, String> {
     if stem.is_empty() {
         return Err("The new name is empty.".into());
     }
+    if stem.contains('/') || stem.contains('\\') {
+        return Err("The new name can't contain a path separator.".into());
+    }
+    if stem == "." || stem == ".." {
+        return Err("That name isn't allowed.".into());
+    }
 
     let dir = src
         .parent()
@@ -163,6 +180,11 @@ pub fn rename_to_stem(path: &str, stem: &str) -> Result<String, String> {
             None => dir.join(s),
         }
     };
+
+    // Held across the whole check-then-rename sequence — see rename_lock().
+    let _guard = rename_lock()
+        .lock()
+        .map_err(|_| "Internal error: rename lock was poisoned.".to_string())?;
 
     let mut target = build(stem);
 
@@ -194,6 +216,9 @@ pub fn revert(current: &str, original: &str) -> Result<(), String> {
             "{} is not there any more — it was moved or renamed outside Screenshotify.",
             from.file_name().unwrap_or_default().to_string_lossy()
         ));
+    }
+    if from.parent() != to.parent() {
+        return Err("The original location doesn't match — refusing to restore across folders.".into());
     }
     if to.exists() {
         return Err(format!(

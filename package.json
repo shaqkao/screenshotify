@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "start": "tauri dev",
-    "release": "tauri build"
+    "release": "tauri build",
+    "version": "node scripts/sync-readme-version.js && git add README.md"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.1",

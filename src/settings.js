@@ -14,6 +14,7 @@ export const DEFAULTS = {
   watchFolders: [],
   watchEnabled: true,
   notifications: true,
+  autoApplySuggestion: false,
   autostart: false,
   startMinimized: true,
   closeToTray: true,

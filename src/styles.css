@@ -1720,9 +1720,41 @@ main {
 .hrow-to {
   font-weight: 600;
   line-height: 1.5;
+}
+
+.hrow-to-text,
+.hrow-to-input {
+  display: block;
+  width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.hrow-to-text[hidden],
+.hrow-to-input[hidden] { display: none; }
+
+.hrow-to-text {
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.hrow-to-text:hover,
+.hrow-to-text:focus-visible {
+  background: var(--bg-sunken);
+  outline: none;
+}
+
+.hrow-to-input {
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg-sunken);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 0 4px;
+  margin: -1px -4px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .hrow-from {

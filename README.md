@@ -10,7 +10,11 @@ Screenshotify sits in the Windows tray or the macOS menu bar, notices new screen
 and asks an AI model of your choosing for a filename that describes what is actually
 on screen. Nothing is renamed until you say so.
 
-### [<img src="https://i.postimg.cc/d1Dp3HYj/windows.png" width="20" valign="middle" alt="windows"> Download for Windows](https://github.com/shaqkao/screenshotify/releases/download/v0.1.8/Screenshotify_0.1.8_x64-setup.exe) · [<img src="https://i.postimg.cc/3NVLkYB7/apple.png" width="20" valign="middle" alt="windows">Download for macOS](https://github.com/shaqkao/screenshotify/releases/download/v0.1.8/Screenshotify_0.1.8_universal.dmg)
+<p align="center">
+  <a href="https://github.com/shaqkao/screenshotify/releases/download/v0.1.8/Screenshotify_0.1.8_x64-setup.exe"><img src="assets/windows.png" height="40" alt="Download for Windows"></a>
+  <a href="https://github.com/shaqkao/screenshotify/releases/download/v0.1.8/Screenshotify_0.1.8_universal.dmg"><img src="assets/macos.png" height="40" alt="Download for macOS"></a>
+  <a href="https://apps.microsoft.com/detail/9pdq6lhsck9n"><img src="assets/microsoft-store.png" height="40" alt="Get it from Microsoft"></a>
+</p>
 
 Free · open source · MIT · [bring your own API key](provider.md)
 
@@ -21,11 +25,9 @@ Free · open source · MIT · [bring your own API key](provider.md)
 
 <div align="center">
 
-<img src="assets/intro1.png" width="70%" alt="Screenshotify screenshot 1">
+<img src="assets/intro0.png" width="70%" alt="Screenshotify screenshot 0">
 
-<img src="assets/intro2.png" width="70%" alt="Screenshotify screenshot 2">
-
-<img src="assets/intro3.png" width="70%" alt="Screenshotify screenshot 3">
+<img src="assets/intro1.png" width="32%" alt="Screenshotify screenshot 1"> <img src="assets/intro2.png" width="32%" alt="Screenshotify screenshot 2"> <img src="assets/intro3.png" width="32%" alt="Screenshotify screenshot 3">
 
 </div>
 
@@ -231,9 +233,6 @@ Deliberately left out to keep the first release shippable:
 - Managing local models for you (installing, downloading, VRAM detection) —
   point the base URL at Ollama or LM Studio instead
 - Mac App Store distribution
-- A live Microsoft Store listing — the app already packages as MSIX (see
-  [docs/MICROSOFT_STORE.md](docs/MICROSOFT_STORE.md)), it just hasn't been
-  submitted through Partner Center yet
 - Notarised macOS builds (they need a paid Apple Developer ID)
 - Linux — the Rust side is `#[cfg]`-gated rather than Windows-only now, but
   nothing there has been built or tested

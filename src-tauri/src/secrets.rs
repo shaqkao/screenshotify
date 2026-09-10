@@ -54,4 +54,3 @@ pub fn delete() -> Result<(), String> {
         Err(e) => Err(format!("Could not remove the API key: {e}")),
     }
 }
-

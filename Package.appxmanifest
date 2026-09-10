@@ -14,7 +14,7 @@
   <Identity
     Name="Shaqkao.screenshotify"
     Publisher="CN=EE514826-F52B-4819-A278-EE6B06BE455E"
-    Version="1.0.0.0" />
+    Version="1.0.1.9" />
 
   <Properties>
     <DisplayName>screenshotify</DisplayName>

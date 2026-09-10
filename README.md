@@ -11,9 +11,11 @@ and asks an AI model of your choosing for a filename that describes what is actu
 on screen. Nothing is renamed until you say so.
 
 <p align="center">
-  <a href="https://github.com/shaqkao/screenshotify/releases/download/v0.1.8/Screenshotify_0.1.8_x64-setup.exe"><img src="assets/windows.png" height="60" alt="Download for Windows"></a>
-  <a href="https://github.com/shaqkao/screenshotify/releases/download/v0.1.8/Screenshotify_0.1.8_universal.dmg"><img src="assets/macos.png" height="60" alt="Download for macOS"></a>
-  <a href="https://apps.microsoft.com/detail/9pdq6lhsck9n"><img src="assets/microsoft-store.png" height="60" alt="Get it from Microsoft"></a>
+  <a href="https://github.com/shaqkao/screenshotify/releases/download/v0.1.8/Screenshotify_0.1.8_x64-setup.exe"><img src="assets/windows.png" height="50" alt="Download for Windows"></a>
+  ・
+  <a href="https://github.com/shaqkao/screenshotify/releases/download/v0.1.8/Screenshotify_0.1.8_universal.dmg"><img src="assets/macos.png" height="50" alt="Download for macOS"></a>
+  ・
+  <a href="https://apps.microsoft.com/detail/9pdq6lhsck9n"><img src="assets/microsoft-store.png" height="50" alt="Get it from Microsoft"></a>
 </p>
 
 Free · open source · MIT · [bring your own API key](provider.md)

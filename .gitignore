@@ -15,6 +15,7 @@ src-tauri/gen/schemas/
 devcert.pfx
 *.pfx
 msix-stage/
+.local-msix-test/
 *.msix
 *.msixbundle
 

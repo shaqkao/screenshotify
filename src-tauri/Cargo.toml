@@ -63,7 +63,12 @@ tauri-plugin-process = "2.3"
 keyring = { version = "3.6", default-features = false, features = ["windows-native"] }
 
 # Detects MSIX package identity, to hide the self-updater UI on Store/MSIX installs.
-windows = { version = "0.58", features = ["ApplicationModel", "Win32_Storage_Packaging_Appx", "Win32_Foundation"] }
+windows = { version = "0.58", features = ["ApplicationModel", "ApplicationModel_Activation", "Win32_Storage_Packaging_Appx", "Win32_Foundation"] }
+
+# The upstream autostart plugin does not quote the executable path it writes
+# to HKCU\...\Run. Screenshotify owns the Windows entry directly so installs
+# below a path containing spaces still launch correctly.
+winreg = "0.55"
 
 # Windows toast notifications with real action buttons (bypasses
 # tauri-plugin-notification, which drops action data on desktop). Vendored

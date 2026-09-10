@@ -18,6 +18,9 @@ use watcher::Watch;
 /// the menu bar on macOS.
 const MINIMIZED_FLAG: &str = "--minimized";
 
+#[cfg(windows)]
+const STARTUP_TASK_ID: &str = "ScreenshotifyStartup";
+
 struct AppState {
     close_to_tray: AtomicBool,
     launched_minimized: bool,
@@ -64,6 +67,244 @@ fn is_packaged() -> bool {
 #[tauri::command]
 fn is_packaged() -> bool {
     false
+}
+
+/// Packaged desktop apps are activated through the startup-task extension,
+/// so Windows does not need (or pass) our `--minimized` registry argument.
+/// Read the activation kind instead to preserve the tray-only login launch.
+#[cfg(windows)]
+fn is_startup_activation() -> bool {
+    use windows::ApplicationModel::Activation::ActivationKind;
+    use windows::ApplicationModel::AppInstance;
+
+    is_packaged()
+        && AppInstance::GetActivatedEventArgs()
+            .and_then(|args| args.Kind())
+            .map(|kind| kind == ActivationKind::StartupTask)
+            .unwrap_or(false)
+}
+
+#[cfg(not(windows))]
+fn is_startup_activation() -> bool {
+    false
+}
+
+#[cfg(windows)]
+fn startup_task() -> Result<windows::ApplicationModel::StartupTask, String> {
+    use windows::core::HSTRING;
+    use windows::ApplicationModel::StartupTask;
+
+    StartupTask::GetAsync(&HSTRING::from(STARTUP_TASK_ID))
+        .and_then(|operation| operation.get())
+        .map_err(|error| format!("Could not access the Windows startup task: {error}"))
+}
+
+#[cfg(windows)]
+fn startup_task_is_enabled(state: windows::ApplicationModel::StartupTaskState) -> bool {
+    use windows::ApplicationModel::StartupTaskState;
+
+    state == StartupTaskState::Enabled || state == StartupTaskState::EnabledByPolicy
+}
+
+#[cfg(windows)]
+fn packaged_autostart_enabled() -> Result<bool, String> {
+    startup_task()?
+        .State()
+        .map(startup_task_is_enabled)
+        .map_err(|error| format!("Could not read the Windows startup task: {error}"))
+}
+
+#[cfg(windows)]
+fn set_packaged_autostart(enabled: bool) -> Result<bool, String> {
+    use windows::ApplicationModel::StartupTaskState;
+
+    let task = startup_task()?;
+    if !enabled {
+        task.Disable()
+            .map_err(|error| format!("Could not disable the Windows startup task: {error}"))?;
+        return Ok(false);
+    }
+
+    let state = task
+        .RequestEnableAsync()
+        .and_then(|operation| operation.get())
+        .map_err(|error| format!("Could not enable the Windows startup task: {error}"))?;
+
+    if startup_task_is_enabled(state) {
+        Ok(true)
+    } else if state == StartupTaskState::DisabledByUser {
+        Err(
+            "Windows disabled Screenshotify in Task Manager. Re-enable it under Startup apps, then try again."
+                .into(),
+        )
+    } else if state == StartupTaskState::DisabledByPolicy {
+        Err("A Windows policy prevents Screenshotify from starting at sign-in.".into())
+    } else {
+        Err("Windows did not enable Screenshotify as a startup app.".into())
+    }
+}
+
+#[cfg(windows)]
+fn windows_startup_command(executable: &Path) -> String {
+    format!("\"{}\" {MINIMIZED_FLAG}", executable.display())
+}
+
+#[cfg(windows)]
+fn unpackaged_autostart_enabled(app_name: &str) -> Result<bool, String> {
+    use winreg::enums::{HKEY_CURRENT_USER, KEY_READ};
+    use winreg::RegKey;
+
+    const RUN_KEY: &str = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+    const APPROVED_KEY: &str =
+        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run";
+
+    let user = RegKey::predef(HKEY_CURRENT_USER);
+    let run = user
+        .open_subkey_with_flags(RUN_KEY, KEY_READ)
+        .map_err(|error| format!("Could not open the Windows startup registry key: {error}"))?;
+    if run.get_value::<String, _>(app_name).is_err() {
+        return Ok(false);
+    }
+
+    let disabled_by_task_manager = user
+        .open_subkey_with_flags(APPROVED_KEY, KEY_READ)
+        .ok()
+        .and_then(|key| key.get_raw_value(app_name).ok())
+        .and_then(|value| {
+            (value.bytes.len() >= 8)
+                .then(|| !value.bytes.iter().rev().take(8).all(|byte| *byte == 0))
+        })
+        .unwrap_or(false);
+
+    Ok(!disabled_by_task_manager)
+}
+
+#[cfg(windows)]
+fn set_unpackaged_autostart(app_name: &str, enabled: bool) -> Result<bool, String> {
+    use std::io::ErrorKind;
+    use winreg::enums::RegType::REG_BINARY;
+    use winreg::enums::{HKEY_CURRENT_USER, KEY_SET_VALUE};
+    use winreg::{RegKey, RegValue};
+
+    const RUN_KEY: &str = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+    const APPROVED_KEY: &str =
+        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run";
+    const APPROVED: [u8; 12] = [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    let user = RegKey::predef(HKEY_CURRENT_USER);
+    let run = user
+        .open_subkey_with_flags(RUN_KEY, KEY_SET_VALUE)
+        .map_err(|error| format!("Could not open the Windows startup registry key: {error}"))?;
+
+    if enabled {
+        let executable = std::env::current_exe()
+            .map_err(|error| format!("Could not find Screenshotify's executable: {error}"))?;
+        run.set_value(app_name, &windows_startup_command(&executable))
+            .map_err(|error| format!("Could not register Screenshotify for startup: {error}"))?;
+
+        if let Ok(approved) = user.open_subkey_with_flags(APPROVED_KEY, KEY_SET_VALUE) {
+            approved
+                .set_raw_value(
+                    app_name,
+                    &RegValue {
+                        vtype: REG_BINARY,
+                        bytes: APPROVED.to_vec(),
+                    },
+                )
+                .map_err(|error| {
+                    format!("Could not enable Screenshotify in Startup apps: {error}")
+                })?;
+        }
+        Ok(true)
+    } else {
+        if let Err(error) = run.delete_value(app_name) {
+            if error.kind() != ErrorKind::NotFound {
+                return Err(format!(
+                    "Could not remove Screenshotify from startup: {error}"
+                ));
+            }
+        }
+        Ok(false)
+    }
+}
+
+#[cfg(all(test, windows))]
+mod autostart_tests {
+    use super::*;
+    use windows::ApplicationModel::StartupTaskState;
+
+    #[test]
+    fn windows_command_quotes_paths_with_spaces() {
+        let executable = Path::new(r"C:\Program Files\Screenshotify\screenshotify.exe");
+        assert_eq!(
+            windows_startup_command(executable),
+            r#""C:\Program Files\Screenshotify\screenshotify.exe" --minimized"#
+        );
+    }
+
+    #[test]
+    fn enabled_by_user_or_policy_counts_as_enabled() {
+        assert!(startup_task_is_enabled(StartupTaskState::Enabled));
+        assert!(startup_task_is_enabled(StartupTaskState::EnabledByPolicy));
+        assert!(!startup_task_is_enabled(StartupTaskState::Disabled));
+        assert!(!startup_task_is_enabled(StartupTaskState::DisabledByUser));
+    }
+}
+
+#[tauri::command]
+fn autostart_enabled(app: AppHandle) -> Result<bool, String> {
+    #[cfg(windows)]
+    {
+        if is_packaged() {
+            packaged_autostart_enabled()
+        } else {
+            unpackaged_autostart_enabled(&app.package_info().name)
+        }
+    }
+
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    {
+        use tauri_plugin_autostart::ManagerExt;
+        app.autolaunch()
+            .is_enabled()
+            .map_err(|error| error.to_string())
+    }
+
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
+    {
+        let _ = app;
+        Err("Autostart is not supported on this platform.".into())
+    }
+}
+
+#[tauri::command]
+fn set_autostart(app: AppHandle, enabled: bool) -> Result<bool, String> {
+    #[cfg(windows)]
+    {
+        if is_packaged() {
+            set_packaged_autostart(enabled)
+        } else {
+            set_unpackaged_autostart(&app.package_info().name, enabled)
+        }
+    }
+
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    {
+        use tauri_plugin_autostart::ManagerExt;
+        let manager = app.autolaunch();
+        if enabled {
+            manager.enable().map_err(|error| error.to_string())?;
+        } else {
+            manager.disable().map_err(|error| error.to_string())?;
+        }
+        Ok(enabled)
+    }
+
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
+    {
+        let _ = (app, enabled);
+        Err("Autostart is not supported on this platform.".into())
+    }
 }
 
 #[tauri::command]
@@ -470,7 +711,8 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
 pub fn run() {
     // Not named `launched_minimized`: that would shadow the command of the
     // same name inside `generate_handler!` below.
-    let minimized_launch = std::env::args().any(|a| a == MINIMIZED_FLAG);
+    let minimized_launch =
+        std::env::args().any(|a| a == MINIMIZED_FLAG) || is_startup_activation();
 
     let mut builder = tauri::Builder::default();
 
@@ -546,6 +788,8 @@ pub fn run() {
             show_main_window,
             launched_minimized,
             set_close_to_tray,
+            autostart_enabled,
+            set_autostart,
             is_packaged,
             platform_info,
             set_dock_icon,

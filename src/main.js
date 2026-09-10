@@ -5,7 +5,6 @@ import { getVersion } from "@tauri-apps/api/app";
 import { ask, open as openDialog } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { isPermissionGranted, requestPermission } from "@tauri-apps/plugin-notification";
-import { enable as enableAutostart, disable as disableAutostart, isEnabled as autostartEnabled } from "@tauri-apps/plugin-autostart";
 
 import {
   initSettings,
@@ -67,6 +66,7 @@ async function main() {
   initI18n();
   await initStats();
   await history.initHistory();
+  const packaged = await invoke("is_packaged");
 
   initReview();
   applyListColumns();
@@ -76,7 +76,7 @@ async function main() {
   initTabs();
   initReviewToolbar();
   initHistoryView();
-  await initSettingsForm();
+  await initSettingsForm({ packaged });
   await initNotifications();
   initBackendEvents();
   initLocaleSync();
@@ -91,11 +91,12 @@ async function main() {
   $("app-version").textContent = `v${appVersion}`;
   $("titlebar-version").textContent = `v${appVersion}`;
 
-  // MSIX/Store installs are serviced by Windows itself — the self-updater
-  // UI and its checks don't apply, so hide the whole card rather than let
-  // "Check for updates" fail against a package it can't replace in place.
-  if (await invoke("is_packaged")) {
-    $("updates-card").hidden = true;
+  // MSIX/Store installs are serviced by Windows itself, so only the
+  // self-updater controls and checks are inapplicable.
+  if (packaged) {
+    // Windows services the package itself, but the version/license footer and
+    // GitHub link still apply to Store installs.
+    $("updates-controls").hidden = true;
   } else if (getSettings().autoUpdate) {
     // Never block startup on the network.
     setTimeout(() => checkForUpdates({ silent: true }), 4000);
@@ -1110,7 +1111,7 @@ function refreshHistoryLocale() {
 
 /* ══════════════════════════ Settings form ══════════════════════════ */
 
-async function initSettingsForm() {
+async function initSettingsForm({ packaged }) {
   const s = getSettings();
 
   // — provider —
@@ -1190,15 +1191,34 @@ async function initSettingsForm() {
   // Autostart is owned by the OS, so read the real state rather than ours.
   const autostartInput = $("set-autostart");
   try {
-    autostartInput.checked = await autostartEnabled();
+    let enabled = await invoke("autostart_enabled");
+
+    // Upgrade old registrations in place. This quotes normal Windows paths,
+    // and migrates Store installs from the ineffective registry entry to the
+    // package startupTask declared in Package.appxmanifest.
+    if (enabled) {
+      enabled = await invoke("set_autostart", { enabled: true }).catch((err) => {
+        console.warn("could not normalize the startup registration", err);
+        return true;
+      });
+    } else if (packaged && s.autostart) {
+      enabled = await invoke("set_autostart", { enabled: true }).catch((err) => {
+        console.warn("could not migrate the Store startup registration", err);
+        return false;
+      });
+    }
+    autostartInput.checked = enabled;
+    if (enabled !== !!s.autostart) {
+      await updateSettings({ autostart: enabled });
+    }
   } catch {
     autostartInput.checked = !!s.autostart;
   }
   autostartInput.addEventListener("change", async () => {
     try {
-      if (autostartInput.checked) await enableAutostart();
-      else await disableAutostart();
-      await updateSettings({ autostart: autostartInput.checked });
+      const enabled = await invoke("set_autostart", { enabled: autostartInput.checked });
+      autostartInput.checked = enabled;
+      await updateSettings({ autostart: enabled });
       toastSettingsSaved();
     } catch (err) {
       autostartInput.checked = !autostartInput.checked;

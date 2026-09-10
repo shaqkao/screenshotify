@@ -521,14 +521,16 @@
               </svg>
               <span data-i18n="settings.updates.title">Updates</span>
             </legend>
-            <label class="check">
-              <input type="checkbox" id="set-auto-update" />
-              <div class="checkmark"></div>
-              <span data-i18n="settings.updates.autoCheck">Check for updates automatically on launch</span>
-            </label>
-            <div class="field">
-              <button class="btn" id="btn-check-update" data-i18n="settings.updates.checkNow">Check for updates now</button>
-              <span class="muted" id="update-status"></span>
+            <div id="updates-controls">
+              <label class="check">
+                <input type="checkbox" id="set-auto-update" />
+                <div class="checkmark"></div>
+                <span data-i18n="settings.updates.autoCheck">Check for updates automatically on launch</span>
+              </label>
+              <div class="field">
+                <button class="btn" id="btn-check-update" data-i18n="settings.updates.checkNow">Check for updates now</button>
+                <span class="muted" id="update-status"></span>
+              </div>
             </div>
             <div class="card-footer">
               <p class="card-hint">Screenshotify <span id="app-version">…</span>

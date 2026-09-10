@@ -1903,8 +1903,7 @@ main {
 
 /* ─────────────────────────────── Settings ─────────────────────────────── */
 /* Same darkening as Review/History. Every piece of text in this view lives
-   inside a .card, which has its own opaque --bg-elev background, so nothing
-   here needs the readable-on-dark token overrides those other two use. */
+   inside a .card, which uses the same fixed surface as the menu/title bar. */
 #view-settings {
   overflow-y: auto;
   background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55));
@@ -1920,7 +1919,7 @@ main {
 }
 
 .card {
-  background: var(--bg-elev);
+  background: var(--sidebar-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 8px 18px 18px;

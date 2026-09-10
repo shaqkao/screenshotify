@@ -99,13 +99,13 @@ runtime folder alongside the exe — bigger package, fully self-contained.
 Add-AppxPackage .\Screenshotify_<version>_x64.msix
 ```
 
-Confirm: the app installs and runs normally, and **Settings → Updates**
-is gone — `is_packaged()` (`src-tauri/src/lib.rs`) detects the MSIX package
-identity and hides that whole card, since Windows services MSIX updates
-itself rather than through `tauri-plugin-updater`. Then compare against a
-normal `npm run start` or `npm run release` build, where that same card
-should still be there — confirming the one codebase actually behaves
-differently in the two cases, not that it's just always hidden.
+Confirm: the app installs and runs normally, and **Settings → Updates** hides
+only the self-update controls. The version/license footer and **Star on
+GitHub** button remain visible. `is_packaged()` (`src-tauri/src/lib.rs`)
+detects the MSIX package identity because Windows services MSIX updates
+itself rather than through `tauri-plugin-updater`. Also enable **Start
+Screenshotify when I sign in to Windows**, sign out and back in, and confirm
+the app starts in the system tray without opening its window.
 
 ## Why this isn't wired into CI
 
@@ -136,6 +136,6 @@ Package.appxmanifest                       MSIX identity manifest (repo root —
 Assets/                                    MSIX tile/logo icons (repo root)
 src-tauri/tauri.msix.conf.json             disables updater-artifact signing for this build only
 scripts/stage-msix.js                      copies the built exe into msix-stage/ for winapp pack
-src-tauri/src/lib.rs — is_packaged()       runtime check used to hide the Updates card under MSIX
+src-tauri/src/lib.rs                       package detection, startup-task control and activation handling
 docs/PRIVACY.md                            privacy policy Partner Center links to
 ```

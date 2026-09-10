@@ -45,6 +45,17 @@
         Square44x44Logo="Assets\AppList.png">
         <uap:DefaultTile Wide310x150Logo="Assets\WideTile.png" />
       </uap:VisualElements>
+      <Extensions>
+        <desktop:Extension
+          Category="windows.startupTask"
+          Executable="$targetnametoken$.exe"
+          EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask
+            TaskId="ScreenshotifyStartup"
+            Enabled="false"
+            DisplayName="Screenshotify" />
+        </desktop:Extension>
+      </Extensions>
     </Application>
   </Applications>
 

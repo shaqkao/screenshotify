@@ -12,9 +12,7 @@ on screen. Nothing is renamed until you say so.
 
 <p align="center">
   <a href="https://github.com/shaqkao/screenshotify/releases/download/v0.1.9/Screenshotify_0.1.9_x64-setup.exe"><img src="assets/windows.png" height="50" alt="Download for Windows"></a>
-  ・
   <a href="https://github.com/shaqkao/screenshotify/releases/download/v0.1.9/Screenshotify_0.1.9_universal.dmg"><img src="assets/macos.png" height="50" alt="Download for macOS"></a>
-  ・
   <a href="https://apps.microsoft.com/detail/9pdq6lhsck9n"><img src="assets/microsoft-store.png" height="50" alt="Get it from Microsoft"></a>
 </p>
 
